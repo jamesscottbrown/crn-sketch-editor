@@ -16,10 +16,7 @@ function crnEditor(opts){
   drawRatesList();
 
   parent.append("h2").text("Reactions");
-  var svg = parent
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height);
+  
 
 
 
