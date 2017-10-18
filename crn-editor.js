@@ -15,11 +15,26 @@ function crnEditor(opts){
   var ratesListDiv = parent.append('div').attr("id", "ratesListDiv"); 
   drawRatesList();
 
+  var constraints = opts.constraints ? opts.constraints : "";
+  var constraintsDiv = parent.append('div').attr("id", "constraintsDiv"); 
+  drawConstraintsList();
+
+
   parent.append("h2").text("Reactions");
   
 
 
 
+
+  // Stuff relating to Constraints list
+  function drawConstraintsList() {
+    constraintsDiv.node().innerHTML = "";
+
+    ratesListDiv.append("h2").text("Constraints");
+    ratesListDiv.append("textarea")
+    .node().value = constraints;
+
+  }
 
   // Stuff relating to kinetic rates list
 
@@ -263,7 +278,7 @@ function crnEditor(opts){
 
 
   function getCRN(){
-    return {species: species, rates: rates};
+    return {species: species, rates: rates, constraints: constraints};
   }
 
 
