@@ -50,7 +50,7 @@ function crnEditor(opts) {
                 document.getElementById('included_' + species[i].name).value = false;
             }
             for (var i = 0; i < d.species.length; i++) {
-                document.getElementById('included_' + d.species[i].name).value = true;
+                document.getElementById('included_' + d.species[i]).value = true;
             }
 
             selectedSpeciesSetIndex = speciesSets.indexOf(d);
