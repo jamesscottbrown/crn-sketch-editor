@@ -19,12 +19,11 @@ function crnEditor(opts){
   var constraintsDiv = parent.append('div').attr("id", "constraintsDiv"); 
   drawConstraintsList();
 
+  var speciesSets = opts.speciesSets ? opts.speciesSets : [];
+  var speciesSetsListDiv = parent.append('div').attr("id", "speciesSetsDiv");
+  drawSpeciesSetsList();
 
   parent.append("h2").text("Reactions");
-  
-
-
-
 
   // Stuff relating to Constraints list
   function drawConstraintsList() {
@@ -36,7 +35,130 @@ function crnEditor(opts){
 
   }
 
-  // Stuff relating to kinetic rates list
+
+    // Stuff relating to list of species sets
+    var selectedSpeciesSetIndex;
+
+    function drawSpeciesSetsList() {
+
+        function openEditspeciesSetsModal(d) {
+
+            nameField.node().value = d.name;
+
+            // set indicator variable for each species
+            for (var i = 0; i < species.length; i++) {
+                document.getElementById('included_' + species[i].name).value = false;
+            }
+            for (var i = 0; i < d.species.length; i++) {
+                document.getElementById('included_' + d.species[i].name).value = true;
+            }
+
+            selectedSpeciesSetIndex = speciesSets.indexOf(d);
+            $('#speciesSetParameterModal').modal("show");
+        }
+
+
+        speciesSetsListDiv.node().innerHTML = "";
+
+        speciesSetsListDiv.append("h2").text("Sets of species");
+
+        speciesSetsListDiv.append("p").text("A set of species can be given as the reactant or product of a reaction, indicating choices. ");
+
+        var speciesSetsListItems = speciesSetsListDiv.append("ul")
+            .selectAll("li")
+            .data(speciesSets)
+            .enter()
+            .append("li")
+            .text(function (d) {
+                return d.name + " {" + d.species.join(", ") + "}";
+            });
+
+        speciesSetsListItems.append("a")
+            .attr("class", "fa  fa-pencil")
+            .attr("href", "")
+            .attr("onclick", "return false;")
+            .on("click", function (d) {
+                openEditspeciesSetsModal(d);
+            });
+
+        speciesSetsListDiv.append("a")
+            .attr("href", "")
+            .text("Add a species set")
+            .attr("onclick", "return false;")
+            .on("click", function () {
+                var newName = prompt("Name:");
+                if (isValidNewName(newName)) {
+                    var newspeciesSet = {name: newName, species: []};
+                    speciesSets.push(newspeciesSet);
+                    drawSpeciesSetsList();
+                }
+                return false;
+            });
+
+        // Make edit modal
+        var oldModal = d3.select("#speciesSetParameterModal");
+        if (oldModal.node()) {
+            oldModal.node().innerHTML = "";
+            oldModal.remove();
+        }
+
+        var modal = d3.select("body").append("div").attr("id", "speciesSetParameterModal").attr("class", "modal")
+        var modal_content = modal.append("div").attr("class", "modal-content");
+
+        var modal_header = modal_content.append("div").attr("class", "modal-header");
+        modal_header.append("button").attr("class", "close").attr("data-dismiss", "modal").text("×");
+        modal_header.append("h4").text("Edit speciesSet Parameter");
+
+        var modal_body = modal_content.append("div").attr("class", "modal-body");
+        var form = modal_body.append("form").attr("class", ".form-inline");
+
+        var nameField = addFieldAndLabel(form, 'name', 'speciesSet Parameter Name:', 'input');
+
+        // need one select per species
+        // TODO: update
+        for (var i = 0; i < species.length; i++) {
+            var s = species[i];
+            var speciesField = addFieldAndLabel(form, 'included_' + s.name, s.name, 'select');
+
+            speciesField.append("option").attr("value", true).text("Included");
+            speciesField.append("option").attr("value", false).text("Not included");
+        }
+
+
+        var modal_footer = modal_content.append("div").attr("class", "modal-footer");
+        modal_footer.append("button").attr("type", "button").attr("class", "btn btn-default").attr("data-dismiss", "modal").text("Close")
+        modal_footer.append("button").attr("type", "button").attr("class", "btn btn-default").text("Save").on("click", function () {
+
+            var selectedSpeciesSet = speciesSets[selectedSpeciesSetIndex];
+
+            var newName = nameField.node().value;
+            if (newName != selectedSpeciesSet.name && isValidNewName(newName)) {
+                selectedSpeciesSet.name = newName;
+            }
+
+            // save state for each species
+            var included_species = [];
+            for (var i = 0; i < species.length; i++) {
+                var species_name = species[i].name;
+                var species_included = document.getElementById('included_' + species_name).value;
+
+                if (species_included == "true") {
+                    included_species.push(species_name);
+                }
+            }
+            selectedSpeciesSet.species = included_species;
+
+
+            $('#speciesSetParameterModal').modal("hide");
+            drawSpeciesSetsList();
+
+        })
+
+    }
+
+
+    
+    // Stuff relating to kinetic rates list
 
     var selectedRateIndex;
 
@@ -143,7 +265,11 @@ function crnEditor(opts){
 
   // Stuff relating to species list
   function isValidNewName(newName){
-    return newName && (species.filter(function(s){return s.name === newName}).length == 0);
+      var notSpeciesName = (species.filter(function(s){return s.name === newName}).length == 0);
+      var notSpeciesSetName = (speciesSets.filter(function(s){return s.name === newName}).length == 0);
+      var notRateName = (rates.filter(function(s){return s.name === newName}).length == 0);
+
+      return newName && notSpeciesName && notSpeciesSetName && notRateName;
   }
 
 
@@ -278,7 +404,7 @@ function crnEditor(opts){
 
 
   function getCRN(){
-    return {species: species, rates: rates, constraints: constraints};
+    return {species: species, speciesSets: speciesSets, rates: rates, constraints: constraints};
   }
 
 
