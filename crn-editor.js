@@ -262,6 +262,12 @@ function crnEditor(opts){
   }
 
 
+  function getCRN(){
+    return {species: species, rates: rates};
+  }
+
+
+  return {getCRN: getCRN}
 
 
 }  
