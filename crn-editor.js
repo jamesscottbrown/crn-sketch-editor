@@ -54,7 +54,7 @@ function crnEditor(opts) {
             }
 
             selectedSpeciesSetIndex = speciesSets.indexOf(d);
-            $('#speciesSetParameterModal').modal("show");
+            $('#speciesSetModal').modal("show");
         }
 
 
@@ -96,13 +96,13 @@ function crnEditor(opts) {
             });
 
         // Make edit modal
-        var oldModal = d3.select("#speciesSetParameterModal");
+        var oldModal = d3.select("#speciesSetModal");
         if (oldModal.node()) {
             oldModal.node().innerHTML = "";
             oldModal.remove();
         }
 
-        var modal = d3.select("body").append("div").attr("id", "speciesSetParameterModal").attr("class", "modal");
+        var modal = d3.select("body").append("div").attr("id", "speciesSetModal").attr("class", "modal");
         var modal_content = modal.append("div").attr("class", "modal-content");
 
         var modal_header = modal_content.append("div").attr("class", "modal-header");
@@ -149,7 +149,7 @@ function crnEditor(opts) {
             selectedSpeciesSet.species = included_species;
 
 
-            $('#speciesSetParameterModal').modal("hide");
+            $('#speciesSetModal').modal("hide");
             drawSpeciesSetsList();
 
         })
