@@ -183,7 +183,7 @@ function crnEditor(opts) {
             .enter()
             .append("li")
             .text(function (d) {
-                return d.min + " <= " + d.name + " <= " + d.max + " ";
+                return d.min + " ≤ " + d.name + " ≤ " + d.max + " ";
             });
 
         ratesListItems.append("a")
@@ -299,9 +299,9 @@ function crnEditor(opts) {
             .append("li")
             .text(function (d) {
                 if (d.required) {
-                    return d.name + " (mandatory). Initially " + d.initial_min + " <= " + d.name + " <= " + d.initial_max + " ";
+                    return d.name + " (mandatory). Initially " + d.initial_min + " ≤ " + d.name + " ≤ " + d.initial_max + " ";
                 } else {
-                    return d.name + " (optional). Initially " + d.initial_min + " <= " + d.name + " <= " + d.initial_max + " ";
+                    return d.name + " (optional). Initially " + d.initial_min + " ≤ " + d.name + " ≤ " + d.initial_max + " ";
                 }
 
             });
