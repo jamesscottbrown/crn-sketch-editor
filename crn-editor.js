@@ -380,7 +380,8 @@ function crnEditor(opts) {
             .nodes(nodes)
             .links(links)
             .size([width, height])
-            .linkDistance(50)
+            .linkDistance(100)
+            .flowLayout('x', 100)
             .avoidOverlaps(true)
             .on('tick', tick);
 
