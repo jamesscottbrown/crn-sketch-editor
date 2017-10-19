@@ -7,6 +7,8 @@ function crnEditor(opts) {
         parent = d3.select('body');
     }
 
+    var edgeOffset = 20;
+
     var species = opts.species ? opts.species : [];
     var speciesListDiv = parent.append('div').attr("id", "speciesListDiv");
     drawSpeciesList();
@@ -452,8 +454,14 @@ function crnEditor(opts) {
                 sourceX = d.source.x + (sourcePadding * normX),
                 sourceY = d.source.y + (sourcePadding * normY),
                 targetX = d.target.x - (targetPadding * normX),
-                targetY = d.target.y - (targetPadding * normY);
-            return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
+                targetY = d.target.y - (targetPadding * normY),
+
+                controlX = (sourceX + targetX) / 2,
+                offset = (d.target.type == "reaction") ? +edgeOffset : -edgeOffset,
+                controlY = (sourceY + targetY) / 2 + offset;
+
+                // Path command: M moves to 'source' position, then Q draws a Quadratic Bezier curve to 'target' position via control point
+                return 'M' + sourceX + ',' + sourceY + 'Q' + controlX + "," + controlY + "," + targetX + ',' + targetY;
         });
 
         circle.attr('transform', function(d) {
