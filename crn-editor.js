@@ -23,6 +23,9 @@ function crnEditor(opts) {
     var speciesSetsListDiv = parent.append('div').attr("id", "speciesSetsDiv");
     drawSpeciesSetsList();
 
+    var stoichiometries = opts.stoichiometries ? stoichiometries : [];
+    var stoichiometriesListDiv = parent.append('div').attr("id", "stoichiometriesDiv");
+    drawStoichiometriesList();
 
     var nodes = [],
         lastNodeId = -1, // first node created will have ID of 1
@@ -178,19 +181,87 @@ function crnEditor(opts) {
 
     }
 
+    function drawStoichiometriesList(){
+        stoichiometriesListDiv.node().innerHTML = "";
 
+        stoichiometriesListDiv.append("h2").text("Stoichiometry Variables");
+
+        var stoichiometriesListItems = stoichiometriesListDiv.append("ul")
+            .selectAll("li")
+            .data(stoichiometries)
+            .enter()
+            .append("li");
+
+        stoichiometriesListItems.append("input")
+            .property("value", function(d){ return d.min})
+            .on("change", function(d){
+                d.min = this.value;
+            });
+
+        stoichiometriesListItems.append("i").text(" ≤ ");
+
+        stoichiometriesListItems.append("input")
+            .property("value", function(d){ return d.name})
+            .on("change", function(d){
+                if (isValidNewName(this.value)){
+                    d.name = this.value;
+                }
+            });
+
+        stoichiometriesListItems.append("i").text(" ≤ ");
+
+        stoichiometriesListItems.append("input")
+            .property("value", function(d){ return d.max})
+            .on("change", function(d){
+                d.max = this.value;
+            });
+
+        stoichiometriesListItems.append("a")
+            .attr("class", "fa  fa-trash")
+            .attr("href", "")
+            .attr("onclick", "return false;")
+            .on("click", function (d) {
+                if (confirm("Really delete stoichiometry " + d.name + "?")){
+                    stoichiometries.splice(stoichiometries.indexOf(d), 1);
+                    drawstoichiometriesList();
+                }
+            });
+
+        stoichiometriesListDiv.append("a")
+            .attr("href", "")
+            .attr("class", "fa  fa-plus")
+            .attr("onclick", "return false;")
+            .on("click", function () {
+                var newName = prompt("Stoichiometry parameter name:");
+                if (isValidNewName(newName)) {
+                    var newRate = {name: newName, min: 1, max: 1};
+                    stoichiometries.push(newRate);
+                    drawStoichiometriesList();
+                }
+                return false;
+            });
+
+    }
+    
     // Stuff relating to species list
     function isValidNewName(newName) {
         var notSpeciesName = (species.filter(function (s) {
             return s.name === newName
         }).length == 0);
+        
         var notSpeciesSetName = (speciesSets.filter(function (s) {
             return s.name === newName
         }).length == 0);
+        
         var notRateName = (rates.filter(function (s) {
             return s.name === newName
         }).length == 0);
 
+        var notStoichiometryName = (stoichiometries.filter(function (s) {
+            return s.name === newName
+        }).length == 0);
+
+        
         return newName && notSpeciesName && notSpeciesSetName && notRateName;
     }
 
@@ -416,7 +487,7 @@ function crnEditor(opts) {
                 if (mouseup_node === mousedown_node || (to_reaction && from_reaction) || (to_species && from_species) ) {
                     resetMouseVars();
                 } else {
-                    links.push({source: mousedown_node.id, target: mouseup_node.id});
+                    links.push({source: mousedown_node.id, target: mouseup_node.id, stoichiometry: '?'});
                     restart();
                 }
 
@@ -437,6 +508,24 @@ function crnEditor(opts) {
             var notRequired = ((d.source.type == "reaction" && !d.source.required) || (d.target.type == "reaction" && !d.target.required));
             return notRequired ? '4,4' : '1,0';
         });
+
+        path.on("contextmenu", d3.contextMenu(
+            function(d){
+                return [{
+                    title: 'Set stoichiometry',
+                    action: function (elm, d) {
+                        var stoich = prompt("Stoichiometry ('?', an integer, or a variable name):").trim();
+
+                        // check a stoichiometric variable, or an integer
+                        if (parseInt(stoich) || stoich === '?' || stoichiometries.indexOf(stoich) != -1){
+                            d.stoichiometry = stoich;
+                            restart();
+                        }
+
+                    }
+                }]
+            }
+        ));
 
         // remove old nodes
         circle.exit().remove();
@@ -473,9 +562,20 @@ function crnEditor(opts) {
 
 
     function getCRN() {
-        return {species: species, speciesSets: speciesSets, rates: rates, constraints: constraints};
+        return {
+            species: species,
+            speciesSets: speciesSets,
+            rates: rates,
+            stoichiometries: stoichiometries,
+            constraints: constraints
+        };
     }
 
-    return {getCRN: getCRN}
+    return {
+        getCRN: getCRN,
+        getCRNjson: function () {
+            return JSON.stringify(getCRN());
+        }
+    }
 
 }  
