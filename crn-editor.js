@@ -410,19 +410,7 @@ function crnEditor(opts) {
                 mouseup_node = d;
                 if(mouseup_node === mousedown_node) { resetMouseVars(); return; }
 
-
-                // add link to graph (update if exists)
-                var source, target;
-                if(mousedown_node.id < mouseup_node.id) {
-                    source = mousedown_node;
-                    target = mouseup_node;
-                } else {
-                    source = mouseup_node;
-                    target = mousedown_node;
-                }
-
-                var link = {source: source, target: target};
-                links.push(link);
+                links.push({source: mousedown_node.id, target: mouseup_node.id});
 
                 // select new link
                 restart();
