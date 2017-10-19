@@ -88,7 +88,7 @@ function crnEditor(opts) {
         speciesSetsListItems.attr("draggable", true)
             .on("dragstart", function (d) {
                 var ev = d3.event;
-                ev.dataTransfer.setData("custom-data", d.name);
+                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'speciesSet'}));
             })
             .on("drop", function () {
             });
@@ -157,7 +157,7 @@ function crnEditor(opts) {
         ratesListItems.attr("draggable", true)
             .on("dragstart", function (d) {
                 var ev = d3.event;
-                ev.dataTransfer.setData("custom-data", d.name);
+                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'reaction'}));
             })
             .on("drop", function () {
             });
@@ -253,7 +253,7 @@ function crnEditor(opts) {
         speciesListItems.attr("draggable", true)
             .on("dragstart", function (d) {
                 var ev = d3.event;
-                ev.dataTransfer.setData("custom-data", d.name);
+                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'species'}));
             })
             .on("drop", function () {
             });
@@ -332,8 +332,8 @@ function crnEditor(opts) {
                 d3.event.preventDefault();
             })
             .on('drop', function(d){
-                var data = d3.event.dataTransfer.getData("custom-data");
-                nodes.push({id: ++lastNodeId, type: 'reaction', label: data});
+                var data = JSON.parse(d3.event.dataTransfer.getData("custom-data"));
+                nodes.push({id: ++lastNodeId, type: data.type, label: data.name});
                 restart();
             });
 
@@ -390,10 +390,11 @@ function crnEditor(opts) {
         // add new nodes
         var g = circle.enter().append('svg:g');
 
-        g.append('svg:circle')
+         g.append('svg:circle')
             .attr('class', 'node')
             .attr('r', 12)
-            .style('stroke', 'black')
+            .style('stroke', function(d){ return d.type == 'reaction' ? 'black' : 'white' }) // reactions in circle, species not
+            .style("stroke-dasharray", function(d){ return d.required ? '1,0' : '4,4' }) // optional reactions have dashed, rather than solid, border
             .on('mousedown', function(d) {
                 mousedown_node = d;
                 restart();
@@ -417,6 +418,7 @@ function crnEditor(opts) {
             .attr('x', 0)
             .attr('y', 4)
             .attr('class', 'id')
+            .style("font-style", function(d){ return d.type == "speciesSet" ? 'italic' : 'normal' })
             .text(function(d) { return d.label; });
 
         // remove old nodes
