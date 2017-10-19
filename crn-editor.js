@@ -405,7 +405,13 @@ function crnEditor(opts) {
                 drag_line.classed('hidden', true);
 
                 mouseup_node = d;
-                if (mouseup_node === mousedown_node) {
+
+                var from_reaction = (mousedown_node.type == "reaction");
+                var to_reaction = (mouseup_node.type == "reaction");
+                var from_species = (["species", "speciesSet"].indexOf(mousedown_node.type) != -1);
+                var to_species = (["species", "speciesSet"].indexOf(mouseup_node.type) != -1);
+
+                if (mouseup_node === mousedown_node || (to_reaction && from_reaction) || (to_species && from_species) ) {
                     resetMouseVars();
                 } else {
                     links.push({source: mousedown_node.id, target: mouseup_node.id});
