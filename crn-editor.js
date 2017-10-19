@@ -335,6 +335,9 @@ function crnEditor(opts) {
                 var data = JSON.parse(d3.event.dataTransfer.getData("custom-data"));
                 nodes.push({id: ++lastNodeId, type: data.type, label: data.name});
                 restart();
+            })
+            .on("contextmenu", function(){
+                d3.event.preventDefault();
             });
 
         restart();
@@ -394,7 +397,6 @@ function crnEditor(opts) {
             .attr('class', 'node')
             .attr('r', 12)
             .style('stroke', function(d){ return d.type == 'reaction' ? 'black' : 'white' }) // reactions in circle, species not
-            .style("stroke-dasharray", function(d){ return d.required ? '1,0' : '4,4' }) // optional reactions have dashed, rather than solid, border
             .on('mousedown', function(d) {
                 mousedown_node = d;
                 restart();
@@ -427,6 +429,15 @@ function crnEditor(opts) {
             .style("font-style", function(d){ return d.type == "speciesSet" ? 'italic' : 'normal' })
             .text(function(d) { return d.label; });
 
+        g.filter(function (d) { return d.type == "reaction" })
+            .on("contextmenu", d3.contextMenu(getNodeContextMenu));
+
+        circle.style("stroke-dasharray", function(d){ return d.required ? '1,0' : '4,4' }); // optional reactions have dashed, rather than solid, border
+        path.style("stroke-dasharray", function(d){
+            var notRequired = ((d.source.type == "reaction" && !d.source.required) || (d.target.type == "reaction" && !d.target.required));
+            return notRequired ? '4,4' : '1,0';
+        });
+
         // remove old nodes
         circle.exit().remove();
 
@@ -434,6 +445,24 @@ function crnEditor(opts) {
         force.start();
     }
 
+    function getNodeContextMenu(d){
+        return [{
+            title: 'Mandatory',
+            action: function (elm, d) {
+                d.required=true;
+                restart();
+            },
+            disabled: d.required
+        }, {
+            title: 'Optional',
+            action: function (elm, d) {
+                d.required=false;
+                restart();
+            },
+            disabled: !d.required
+        }]
+
+    }
 
     function resetMouseVars() {
         mousedown_node = null;
