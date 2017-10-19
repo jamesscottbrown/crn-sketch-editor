@@ -23,7 +23,17 @@ function crnEditor(opts) {
     var speciesSetsListDiv = parent.append('div').attr("id", "speciesSetsDiv");
     drawSpeciesSetsList();
 
-    parent.append("h2").text("Reactions");
+
+    var nodes = [],
+        lastNodeId = -1, // first node created will have ID of 1
+        links = [];
+    var force, svg, drag_line, path, circle;
+
+    var mousedown_link = null,
+        mousedown_node = null,
+        mouseup_node = null;
+
+    drawReactionGraph();
 
     // Stuff relating to Constraints list
     function drawConstraintsList() {
@@ -74,6 +84,14 @@ function crnEditor(opts) {
             });
 
         speciesSetsListItems.append("i").text("}");
+
+        speciesSetsListItems.attr("draggable", true)
+            .on("dragstart", function (d) {
+                var ev = d3.event;
+                ev.dataTransfer.setData("custom-data", d.name);
+            })
+            .on("drop", function () {
+            });
 
         speciesSetsListDiv.append("a")
             .attr("href", "")
@@ -134,6 +152,14 @@ function crnEditor(opts) {
                     rates.splice(rates.indexOf(d), 1);
                     drawRatesList();
                 }
+            });
+
+        ratesListItems.attr("draggable", true)
+            .on("dragstart", function (d) {
+                var ev = d3.event;
+                ev.dataTransfer.setData("custom-data", d.name);
+            })
+            .on("drop", function () {
             });
 
         ratesListDiv.append("a")
@@ -224,6 +250,15 @@ function crnEditor(opts) {
                 }
             });
 
+        speciesListItems.attr("draggable", true)
+            .on("dragstart", function (d) {
+                var ev = d3.event;
+                ev.dataTransfer.setData("custom-data", d.name);
+            })
+            .on("drop", function () {
+            });
+
+
         var addLink = speciesListDiv.append("a")
             .attr("href", "")
             .attr("onclick", "return false;")
@@ -239,6 +274,180 @@ function crnEditor(opts) {
             .append("i").attr("class", "fa fa-plus");
 
     }
+
+    function drawReactionGraph(){
+        parent.append("h2").text("Reactions");
+
+        // initiate network
+        var width  = opts.width ? opts.width : 960,
+            height = opts.height ? opts.height : 500;
+
+        force = cola.d3adaptor()
+            .nodes(nodes)
+            .links(links)
+            .size([width, height])
+            .linkDistance(50)
+            .avoidOverlaps(true)
+            .on('tick', tick);
+
+        svg = parent
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // define arrow markers for graph links
+        svg.append('svg:defs').append('svg:marker')
+            .attr('id', 'end-arrow')
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 6)
+            .attr('markerWidth', 3)
+            .attr('markerHeight', 3)
+            .attr('orient', 'auto')
+            .append('svg:path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', '#000');
+
+        // line displayed when dragging new nodes
+        drag_line = svg.append('svg:path')
+            .attr('class', 'link dragline hidden')
+            .attr('d', 'M0,0L0,0');
+
+        path = svg.append('svg:g').selectAll('path');
+        circle = svg.append('svg:g').selectAll('g');
+
+        svg
+            .on('mousemove', function(){
+                if(mousedown_node){
+                    drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
+                }
+            })
+            .on('mouseup', function(){
+                drag_line.classed('hidden', true);
+                resetMouseVars();
+            })
+            .on("dragover", function () {
+                d3.event.preventDefault();
+            })
+            .on("dragenter", function () {
+                d3.event.preventDefault();
+            })
+            .on('drop', function(d){
+                var data = d3.event.dataTransfer.getData("custom-data");
+                nodes.push({id: ++lastNodeId, type: 'reaction', label: data});
+                restart();
+            });
+
+        restart();
+    }
+
+
+    function tick() {
+        // update node positions and links
+        path.attr('d', function(d) {
+            var deltaX = d.target.x - d.source.x,
+                deltaY = d.target.y - d.source.y,
+                dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+                normX = deltaX / dist,
+                normY = deltaY / dist,
+                sourcePadding =  12,
+                targetPadding = 17 ,
+                sourceX = d.source.x + (sourcePadding * normX),
+                sourceY = d.source.y + (sourcePadding * normY),
+                targetX = d.target.x - (targetPadding * normX),
+                targetY = d.target.y - (targetPadding * normY);
+            return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
+        });
+
+        circle.attr('transform', function(d) {
+            return 'translate(' + d.x + ',' + d.y + ')';
+        });
+    }
+
+    function restart() {
+        // path (link) group
+        path = path.data(links);
+        path.style('marker-end', 'url(#end-arrow)');
+
+        // add new links
+        path.enter().append('svg:path')
+            .attr('class', 'link')
+            .style('marker-end', 'url(#end-arrow)')
+            .on('mousedown', function(d) {
+                if(d3.event.ctrlKey) return;
+
+                // select link
+                mousedown_link = d;
+                restart();
+            });
+
+        // remove old links
+        path.exit().remove();
+
+        // circle (node) group
+        // NB: the function arg is crucial here! nodes are known by id, not by index!
+        circle = circle.data(nodes, function(d) { return d.id; });
+
+        // add new nodes
+        var g = circle.enter().append('svg:g');
+
+        g.append('svg:circle')
+            .attr('class', 'node')
+            .attr('r', 12)
+            .style('stroke', 'black')
+            .on('mousedown', function(d) {
+                mousedown_node = d;
+                restart();
+            })
+            .on('mouseup', function(d) {
+                if(!mousedown_node) return;
+
+                // needed by FF
+                drag_line
+                    .classed('hidden', true)
+                    .style('marker-end', '');
+
+                // check for drag-to-self
+                mouseup_node = d;
+                if(mouseup_node === mousedown_node) { resetMouseVars(); return; }
+
+
+                // add link to graph (update if exists)
+                var source, target;
+                if(mousedown_node.id < mouseup_node.id) {
+                    source = mousedown_node;
+                    target = mouseup_node;
+                } else {
+                    source = mouseup_node;
+                    target = mousedown_node;
+                }
+
+                var link = {source: source, target: target};
+                links.push(link);
+
+                // select new link
+                restart();
+            });
+
+        g.append('svg:text')
+            .attr('x', 0)
+            .attr('y', 4)
+            .attr('class', 'id')
+            .text(function(d) { return d.label; });
+
+        // remove old nodes
+        circle.exit().remove();
+
+        // set the graph in motion
+        force.start();
+    }
+
+
+    function resetMouseVars() {
+        mousedown_node = null;
+        mouseup_node = null;
+        mousedown_link = null;
+    }
+
 
 
     function getCRN() {
