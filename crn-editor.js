@@ -90,6 +90,17 @@ function crnEditor(opts) {
 
         speciesSetsListItems.append("i").text("}");
 
+        speciesSetsListItems.append("a")
+            .attr("class", "fa  fa-trash")
+            .attr("href", "")
+            .attr("onclick", "return false;")
+            .on("click", function (d) {
+                if (confirm("Really delete species set " + d.name + "?")){
+                    speciesSets.splice(speciesSets.indexOf(d), 1);
+                    drawSpeciesSetsList();
+                }
+            });
+
         speciesSetsListItems.attr("draggable", true)
             .on("dragstart", function (d) {
                 var ev = d3.event;
@@ -231,7 +242,7 @@ function crnEditor(opts) {
             .on("click", function (d) {
                 if (confirm("Really delete stoichiometry " + d.name + "?")){
                     stoichiometries.splice(stoichiometries.indexOf(d), 1);
-                    drawstoichiometriesList();
+                    drawStoichiometriesList();
                 }
             });
 
