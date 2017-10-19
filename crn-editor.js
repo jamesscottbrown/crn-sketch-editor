@@ -401,19 +401,16 @@ function crnEditor(opts) {
             .on('mouseup', function(d) {
                 if(!mousedown_node) return;
 
-                // needed by FF
-                drag_line
-                    .classed('hidden', true)
-                    .style('marker-end', '');
+                drag_line.classed('hidden', true);
 
-                // check for drag-to-self
                 mouseup_node = d;
-                if(mouseup_node === mousedown_node) { resetMouseVars(); return; }
+                if (mouseup_node === mousedown_node) {
+                    resetMouseVars();
+                } else {
+                    links.push({source: mousedown_node.id, target: mouseup_node.id});
+                    restart();
+                }
 
-                links.push({source: mousedown_node.id, target: mouseup_node.id});
-
-                // select new link
-                restart();
             });
 
         g.append('svg:text')
