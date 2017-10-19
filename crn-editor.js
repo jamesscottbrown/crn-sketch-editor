@@ -63,6 +63,7 @@ function crnEditor(opts) {
             .append("li");
 
         speciesSetsListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.name})
             .on("change", function(d){
                 if (isValidNewName(this.value)){
@@ -73,6 +74,7 @@ function crnEditor(opts) {
         speciesSetsListItems.append("i").text("= {");
 
         speciesSetsListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.species.join(", ")})
             .on("change", function(d){
 
@@ -123,6 +125,7 @@ function crnEditor(opts) {
             .append("li");
 
         ratesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.min})
             .on("change", function(d){
                 d.min = this.value;
@@ -131,6 +134,7 @@ function crnEditor(opts) {
         ratesListItems.append("i").text(" ≤ ");
 
         ratesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.name})
             .on("change", function(d){
                 if (isValidNewName(this.value)){
@@ -141,6 +145,7 @@ function crnEditor(opts) {
         ratesListItems.append("i").text(" ≤ ");
 
         ratesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.max})
             .on("change", function(d){
                 d.max = this.value;
@@ -193,6 +198,7 @@ function crnEditor(opts) {
             .append("li");
 
         stoichiometriesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.min})
             .on("change", function(d){
                 d.min = this.value;
@@ -201,6 +207,7 @@ function crnEditor(opts) {
         stoichiometriesListItems.append("i").text(" ≤ ");
 
         stoichiometriesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.name})
             .on("change", function(d){
                 if (isValidNewName(this.value)){
@@ -211,6 +218,7 @@ function crnEditor(opts) {
         stoichiometriesListItems.append("i").text(" ≤ ");
 
         stoichiometriesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.max})
             .on("change", function(d){
                 d.max = this.value;
@@ -279,6 +287,7 @@ function crnEditor(opts) {
             .append("li");
 
         speciesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.initial_min})
             .on("change", function(d){
                 d.initial_min = this.value;
@@ -287,6 +296,7 @@ function crnEditor(opts) {
         speciesListItems.append("i").text( " ≤ ");
 
         speciesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.name})
             .on("change", function(d){
                 if (isValidNewName(this.value)){
@@ -297,13 +307,14 @@ function crnEditor(opts) {
         speciesListItems.append("i").text(" ≤ ");
 
         speciesListItems.append("input")
+            .attr("class",  "parameter-input")
             .property("value", function(d){ return d.initial_max})
             .on("change", function(d){
                 d.initial_max = this.value;
             });
 
         var mandatoryField = speciesListItems.append("select")
-
+            .style("margin-left", "10px")
             .on("change", function(d){
                 d.required = this.value;
             });
