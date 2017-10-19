@@ -270,6 +270,7 @@ function crnEditor(opts) {
         speciesListDiv.node().innerHTML = "";
 
         speciesListDiv.append("h2").text("Species");
+        speciesListDiv.append("p").text("Ranges correspond to intial molecule counts.");
 
         var speciesListItems = speciesListDiv.append("ul")
             .selectAll("li")
