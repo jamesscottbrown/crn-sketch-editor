@@ -32,7 +32,7 @@ function crnEditor(opts) {
     var nodes = [],
         lastNodeId = -1, // first node created will have ID of 1
         links = [];
-    var force, svg, drag_line, path, circle;
+    var force, svg, drag_line, path, linkLabels, circle;
 
     var mousedown_link = null,
         mousedown_node = null,
@@ -411,6 +411,7 @@ function crnEditor(opts) {
 
         path = svg.append('svg:g').selectAll('path');
         circle = svg.append('svg:g').selectAll('g');
+        linkLabels = svg.append('svg:g').selectAll('text');
 
         svg
             .on('mousemove', function(){
@@ -442,31 +443,53 @@ function crnEditor(opts) {
 
 
     function tick() {
+
         // update node positions and links
         path.attr('d', function(d) {
-            var deltaX = d.target.x - d.source.x,
-                deltaY = d.target.y - d.source.y,
-                dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
-                normX = deltaX / dist,
-                normY = deltaY / dist,
-                sourcePadding =  12,
-                targetPadding = 17 ,
-                sourceX = d.source.x + (sourcePadding * normX),
-                sourceY = d.source.y + (sourcePadding * normY),
-                targetX = d.target.x - (targetPadding * normX),
-                targetY = d.target.y - (targetPadding * normY),
-
-                controlX = (sourceX + targetX) / 2,
-                offset = (d.target.type == "reaction") ? +edgeOffset : -edgeOffset,
-                controlY = (sourceY + targetY) / 2 + offset;
+                var p = getArrowPos(d);
 
                 // Path command: M moves to 'source' position, then Q draws a Quadratic Bezier curve to 'target' position via control point
-                return 'M' + sourceX + ',' + sourceY + 'Q' + controlX + "," + controlY + "," + targetX + ',' + targetY;
+                return 'M' + p.sourceX + ',' + p.sourceY + 'Q' + p.controlX + "," + p.controlY + "," + p.targetX + ',' + p.targetY;
+        });
+
+        linkLabels.attr("x", function(d){
+            return getArrowPos(d).controlX;
+        }).attr("y", function(d){
+            var p = getArrowPos(d);
+
+            if (p.offset > 0){
+                // if arrow was bent downwards, shift text down so top of text beneath it
+                return p.controlY  + this.getBBox().height;
+            } else {
+                return p.controlY;
+            }
         });
 
         circle.attr('transform', function(d) {
             return 'translate(' + d.x + ',' + d.y + ')';
         });
+
+        function getArrowPos(d){
+            var sourcePadding =  12,
+                targetPadding = 17;
+
+            var deltaX = d.target.x - d.source.x,
+                deltaY = d.target.y - d.source.y,
+                dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+                normX = deltaX / dist,
+                normY = deltaY / dist,
+                sourceX = d.source.x + (sourcePadding * normX),
+                sourceY = d.source.y + (sourcePadding * normY),
+                targetX = d.target.x - (targetPadding * normX),
+                targetY = d.target.y - (targetPadding * normY);
+
+            var controlX = (sourceX + targetX) / 2,
+                offset = (d.target.type == "reaction") ? +edgeOffset : -edgeOffset,
+                controlY = (sourceY + targetY) / 2 + offset;
+
+            return {sourceX: sourceX, sourceY: sourceY, targetX: targetX, targetY: targetY, controlX: controlX, controlY: controlY, offset: offset};
+        }
+
     }
 
     function restart() {
@@ -488,6 +511,14 @@ function crnEditor(opts) {
 
         // remove old links
         path.exit().remove();
+
+        // Link labels
+        linkLabels = linkLabels.data(links);
+        linkLabels.enter()
+            .append('text');
+
+        linkLabels.exit().remove();
+        linkLabels.text(function(d){ return d.stoichiometry; });
 
         // circle (node) group
         // NB: the function arg is crucial here! nodes are known by id, not by index!
@@ -549,7 +580,8 @@ function crnEditor(opts) {
                         var stoich = prompt("Stoichiometry ('?', an integer, or a variable name):").trim();
 
                         // check a stoichiometric variable, or an integer
-                        if (parseInt(stoich) || stoich === '?' || stoichiometries.indexOf(stoich) != -1){
+                        var stoichNames = stoichiometries.map(function(d){ return d.name; });
+                        if (parseInt(stoich) || stoich === '?' || stoichNames.indexOf(stoich) != -1){
                             d.stoichiometry = stoich;
                             restart();
                         }
