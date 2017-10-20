@@ -70,6 +70,7 @@ function crnEditor(opts) {
             .property("value", function(d){ return d.name})
             .on("change", function(d){
                 if (isValidNewName(this.value)){
+                    renameNode(d.name, this.value);
                     d.name = this.value;
                 }
             })
@@ -108,6 +109,7 @@ function crnEditor(opts) {
             .on("click", function (d) {
                 if (confirm("Really delete species set " + d.name + "?")){
                     speciesSets.splice(speciesSets.indexOf(d), 1);
+                    removeNode(d.name);
                     drawSpeciesSetsList();
                 }
             });
@@ -153,6 +155,7 @@ function crnEditor(opts) {
             .property("value", function(d){ return d.name})
             .on("change", function(d){
                 if (isValidNewName(this.value)){
+                    renameNode(d.name, this.value);
                     d.name = this.value;
                 }
             })
@@ -181,6 +184,7 @@ function crnEditor(opts) {
             .on("click", function (d) {
                 if (confirm("Really delete rate " + d.name + "?")){
                     rates.splice(rates.indexOf(d), 1);
+                    removeNode(d.name);
                     drawRatesList();
                 }
             });
@@ -228,6 +232,7 @@ function crnEditor(opts) {
             .property("value", function(d){ return d.name})
             .on("change", function(d){
                 if (isValidNewName(this.value)){
+                    renameNode(d.name, this.value);
                     d.name = this.value;
                 }
             });
@@ -248,6 +253,7 @@ function crnEditor(opts) {
             .on("click", function (d) {
                 if (confirm("Really delete stoichiometry " + d.name + "?")){
                     stoichiometries.splice(stoichiometries.indexOf(d), 1);
+                    removeNode(d.name);
                     drawStoichiometriesList();
                 }
             });
@@ -318,6 +324,7 @@ function crnEditor(opts) {
             .property("value", function(d){ return d.name})
             .on("change", function(d){
                 if (isValidNewName(this.value)){
+                    renameNode(d.name, this.value);
                     d.name = this.value;
                 }
             })
@@ -355,6 +362,7 @@ function crnEditor(opts) {
             .on("click", function (d) {
                 if (confirm("Really delete species " + d.name + "?")){
                     species.splice(species.indexOf(d), 1);
+                    removeNode(d.name);
                     drawSpeciesList();
                 }
             });
@@ -709,6 +717,22 @@ function crnEditor(opts) {
 
     }
 
+    function renameNode(oldName, newName){
+        for (var i =0; i<nodes.length; i++){
+            if (nodes[i].label == oldName){
+                nodes.label = newName;
+            }
+        }
+        restart();
+    }
+    
+    function removeNode(nodeName){
+        links = links.filter(function (l){ return (l.source.label != nodeName) && (l.target.label != nodeName); });
+        nodes = nodes.filter(function(n){ return n.label != nodeName });
+        force.links(links).nodes(nodes);
+        restart();
+    }
+    
 
     function resetMouseVars() {
         mousedown_node = null;
