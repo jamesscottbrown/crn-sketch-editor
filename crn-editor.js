@@ -29,9 +29,13 @@ function crnEditor(opts) {
     var stoichiometriesListDiv = parent.append('div').attr("id", "stoichiometriesDiv");
     drawStoichiometriesList();
 
-    var nodes = [],
-        lastNodeId = -1, // first node created will have ID of 1
-        links = [];
+    var nodes = opts.node ? opts.nodes : [],
+        lastNodeId = lastNodeId = -1, // first node created will have ID of 0
+        links = opts.links ? opts.links : [];
+    for (var i=0; i<nodes.length; i++){
+        lastNodeId = Math.max(lastNodeId, nodes[i].id);
+    }
+
     var force, svg, drag_line, path, linkLabels, circle;
 
     var mousedown_link = null,
@@ -740,15 +744,35 @@ function crnEditor(opts) {
         mousedown_link = null;
     }
 
-
-
     function getCRN() {
+        // note that we cannot serialise {nodes: nodes, links: links} because of cyclic references
+        var node_list = [];
+        for (i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var converted_node = {
+                id: node.id,
+                type: node.type,
+                x: node.x,
+                y: node.y,
+                label: node.label,
+            };
+            node_list.push(converted_node);
+        }
+
+        var link_list = [];
+        for (i = 0; i < links.length; i++) {
+            var link = links[i];
+            link_list.push({source_id: link.source.id, target_id: link.target.id, stoichiometry: link.stoichiometry});
+        }
+
         return {
             species: species,
             speciesSets: speciesSets,
             rates: rates,
             stoichiometries: stoichiometries,
-            constraints: constraints
+            constraints: constraints,
+            nodes: node_list,
+            links: link_list
         };
     }
 
