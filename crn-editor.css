@@ -67,7 +67,9 @@ text.id {
   background-color: #ede9e9;
 }
 
-
+.param-li {
+    list-style-type: none;
+}
 
 /* context menus */
 

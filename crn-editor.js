@@ -62,7 +62,8 @@ function crnEditor(opts) {
             .selectAll("li")
             .data(speciesSets)
             .enter()
-            .append("li");
+            .append("li")
+            .attr("class", "param-li");
 
         speciesSetsListItems.append("input")
             .attr("class",  "parameter-input")
@@ -71,6 +72,14 @@ function crnEditor(opts) {
                 if (isValidNewName(this.value)){
                     d.name = this.value;
                 }
+            })
+            // Make draggable
+            .attr("draggable", true)
+            .on("dragstart", function (d) {
+                var ev = d3.event;
+                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'speciesSet'}));
+            })
+            .on("drop", function () {
             });
 
         speciesSetsListItems.append("i").text("= {");
@@ -103,14 +112,6 @@ function crnEditor(opts) {
                 }
             });
 
-        speciesSetsListItems.attr("draggable", true)
-            .on("dragstart", function (d) {
-                var ev = d3.event;
-                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'speciesSet'}));
-            })
-            .on("drop", function () {
-            });
-
         speciesSetsListDiv.append("a")
             .attr("href", "")
             .attr("class", "fa fa-plus")
@@ -135,7 +136,8 @@ function crnEditor(opts) {
             .selectAll("li")
             .data(rates)
             .enter()
-            .append("li");
+            .append("li")
+            .attr("class", "param-li");
 
         ratesListItems.append("input")
             .attr("class",  "parameter-input")
@@ -153,6 +155,14 @@ function crnEditor(opts) {
                 if (isValidNewName(this.value)){
                     d.name = this.value;
                 }
+            })
+            // Make draggable
+            .attr("draggable", true)
+            .on("dragstart", function (d) {
+                var ev = d3.event;
+                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'reaction'}));
+            })
+            .on("drop", function () {
             });
 
         ratesListItems.append("i").text(" ≤ ");
@@ -175,13 +185,6 @@ function crnEditor(opts) {
                 }
             });
 
-        ratesListItems.attr("draggable", true)
-            .on("dragstart", function (d) {
-                var ev = d3.event;
-                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'reaction'}));
-            })
-            .on("drop", function () {
-            });
 
         ratesListDiv.append("a")
             .attr("href", "")
@@ -208,7 +211,8 @@ function crnEditor(opts) {
             .selectAll("li")
             .data(stoichiometries)
             .enter()
-            .append("li");
+            .append("li")
+            .attr("class", "param-li");
 
         stoichiometriesListItems.append("input")
             .attr("class",  "parameter-input")
@@ -297,7 +301,8 @@ function crnEditor(opts) {
             .selectAll("li")
             .data(species)
             .enter()
-            .append("li");
+            .append("li")
+            .attr("class", "param-li");
 
         speciesListItems.append("input")
             .attr("class",  "parameter-input")
@@ -315,6 +320,14 @@ function crnEditor(opts) {
                 if (isValidNewName(this.value)){
                     d.name = this.value;
                 }
+            })
+            // Make draggable
+            .attr("draggable", true)
+            .on("dragstart", function (d) {
+                var ev = d3.event;
+                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'species'}));
+            })
+            .on("drop", function () {
             });
 
         speciesListItems.append("i").text(" ≤ ");
@@ -345,15 +358,6 @@ function crnEditor(opts) {
                     drawSpeciesList();
                 }
             });
-
-        speciesListItems.attr("draggable", true)
-            .on("dragstart", function (d) {
-                var ev = d3.event;
-                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'species'}));
-            })
-            .on("drop", function () {
-            });
-
 
         var addLink = speciesListDiv.append("a")
             .attr("href", "")
