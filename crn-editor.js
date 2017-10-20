@@ -581,6 +581,14 @@ function crnEditor(opts) {
                 restart();
             },
             disabled: !d.required
+        }, {
+            title: 'Delete',
+            action: function (elm, d) {
+                var id = d.id;
+                nodes = nodes.filter(function (n){ return n.id != id});
+                links = links.filter(function (l){ return l.source.id != id && l.target.id != id});
+                restart();
+            }
         }]
 
     }
