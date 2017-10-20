@@ -501,7 +501,6 @@ function crnEditor(opts) {
         // add new links
         path.enter().append('svg:path')
             .attr('class', 'link')
-            .style('marker-end', 'url(#end-arrow)')
             .on('mousedown', function(d) {
                 if(d3.event.ctrlKey) return;
 
@@ -548,7 +547,13 @@ function crnEditor(opts) {
                 var from_species = (["species", "speciesSet"].indexOf(mousedown_node.type) != -1);
                 var to_species = (["species", "speciesSet"].indexOf(mouseup_node.type) != -1);
 
-                if (mouseup_node === mousedown_node || (to_reaction && from_reaction) || (to_species && from_species) ) {
+
+                var validNodePair = (from_reaction && to_species)
+                    || (mousedown_node.type == "or-product" && to_species)
+                    || (from_species && to_reaction)
+                    || (from_species && mouseup_node.type == "or-reactant");
+
+                if (mouseup_node === mousedown_node || !validNodePair) {
                     resetMouseVars();
                 } else {
                     links.push({source: mousedown_node, target: mouseup_node, stoichiometry: '?'});
@@ -569,42 +574,89 @@ function crnEditor(opts) {
             .on("contextmenu", d3.contextMenu(getNodeContextMenu));
 
         circle.style("stroke-dasharray", function(d){ return d.required ? '1,0' : '4,4' }); // optional reactions have dashed, rather than solid, border
+
         path.style("stroke-dasharray", function(d){
             var notRequired = ((d.source.type == "reaction" && !d.source.required) || (d.target.type == "reaction" && !d.target.required));
-            return notRequired ? '4,4' : '1,0';
-        });
 
-        path.on("contextmenu", d3.contextMenu(
-            function(d){
-                return [{
-                    title: 'Set stoichiometry',
-                    action: function (elm, d) {
-                        var stoich = prompt("Stoichiometry ('?', an integer, or a variable name):").trim();
+            var choice = (d.source.type == "or-product" || d.target.type == "or-reactant") ;
+            return (notRequired || choice) ? '4,4' : '1,0';
+        }).style('marker-end', function(d){
+                return (d.target.type == "or-product" || d.target.type == "or-reactant") ? '' : 'url(#end-arrow)';
+            });
 
-                        // check a stoichiometric variable, or an integer
-                        var stoichNames = stoichiometries.map(function(d){ return d.name; });
-                        if (parseInt(stoich) || stoich === '?' || stoichNames.indexOf(stoich) != -1){
-                            d.stoichiometry = stoich;
-                            restart();
-                        }
-
-                    }
-                }, {
-                    title: 'Delete edge',
-                    action: function (elm, d) {
-                        links.splice(links.indexOf(d), 1);
-                        force.links(links);
-                        restart();
-                    }
-                }]
-            }
-        ));
+        path.on("contextmenu", d3.contextMenu(getEdgeContextMenu));
 
         // remove old nodes
         circle.exit().remove();
 
         // set the graph in motion
         force.start();
+    }
+
+    function getEdgeContextMenu(d) {
+        var options = [{
+            title: 'Set stoichiometry',
+            action: function (elm, d) {
+                var stoich = prompt("Stoichiometry ('?', an integer, or a variable name):").trim();
+
+                // check a stoichiometric variable, or an integer
+                var stoichNames = stoichiometries.map(function (d) {
+                    return d.name;
+                });
+                if (parseInt(stoich) || stoich === '?' || stoichNames.indexOf(stoich) != -1) {
+                    d.stoichiometry = stoich;
+                    restart();
+                }
+
+            }
+        }, {
+            title: 'Delete edge',
+            action: function (elm, d) {
+                links.splice(links.indexOf(d), 1);
+                force.links(links);
+                restart();
+            }
+        }];
+
+        if (d.source.type == "reaction" && (d.target.type == "species" || d.target.type == "speciesSet")){
+            options.push({
+                // TODO: should be possible to drag to/rom plus node [but only one!]
+
+                title: 'Add alternative product',
+                action: function (elm, d) {
+                    addAlternative(d, 'product');
+                }
+            });
+        }
+
+        if (d.target.type == "reaction" && (d.source.type == "species" || d.source.type == "speciesSet")){
+            options.push({
+                // TODO: should be possible to drag to/rom plus node [but only one!]
+
+                title: 'Add alternative reactant',
+                action: function (elm, d) {
+                    addAlternative(d, 'reactant');
+                }
+            });
+        }
+
+        return options;
+    }
+
+    function addAlternative(d, role){
+        // add new plus type
+        var orNode = {id: ++lastNodeId, label: "or", type: "or-" + role};
+        nodes.push(orNode);
+
+        // change this edge to point at the plus node
+        var oldTarget = d.target;
+        d.target = orNode;
+
+        // add link from plus node to old target of this edge
+        links.push({source: orNode, target: oldTarget, stoichiometry: '?'});
+
+        force.nodes(nodes).links(links);
+        restart();
     }
 
     function getNodeContextMenu(d){
