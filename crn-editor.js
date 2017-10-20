@@ -551,7 +551,7 @@ function crnEditor(opts) {
                 if (mouseup_node === mousedown_node || (to_reaction && from_reaction) || (to_species && from_species) ) {
                     resetMouseVars();
                 } else {
-                    links.push({source: mousedown_node.id, target: mouseup_node.id, stoichiometry: '?'});
+                    links.push({source: mousedown_node, target: mouseup_node, stoichiometry: '?'});
                     force.links(links);
                     restart();
                 }
