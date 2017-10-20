@@ -571,7 +571,11 @@ function crnEditor(opts) {
             .text(function(d) { return d.label; });
 
         g.filter(function (d) { return d.type == "reaction" })
-            .on("contextmenu", d3.contextMenu(getNodeContextMenu));
+            .on("contextmenu", d3.contextMenu(getReactantNodeContextMenu));
+
+        g.filter(function (d) { return d.type == "or-reactant" || d.type == "or-product" })
+            .on("contextmenu", d3.contextMenu(getChoiceNodeContextMenu));
+
 
         circle.style("stroke-dasharray", function(d){ return d.required ? '1,0' : '4,4' }); // optional reactions have dashed, rather than solid, border
 
@@ -659,7 +663,7 @@ function crnEditor(opts) {
         restart();
     }
 
-    function getNodeContextMenu(d){
+    function getReactantNodeContextMenu(d){
         return [{
             title: 'Mandatory',
             action: function (elm, d) {
@@ -686,6 +690,21 @@ function crnEditor(opts) {
         }]
 
     }
+
+    function getChoiceNodeContextMenu(d){
+        return [{
+            title: 'Delete',
+            action: function (elm, d) {
+                var id = d.id;
+                nodes = nodes.filter(function (n){ return n.id != id});
+                links = links.filter(function (l){ return l.source.id != id && l.target.id != id});
+                force.nodes(nodes).links(links);
+                restart();
+            }
+        }]
+
+    }
+
 
     function resetMouseVars() {
         mousedown_node = null;
