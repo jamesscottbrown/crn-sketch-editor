@@ -432,6 +432,7 @@ function crnEditor(opts) {
             .on('drop', function(d){
                 var data = JSON.parse(d3.event.dataTransfer.getData("custom-data"));
                 nodes.push({id: ++lastNodeId, type: data.type, label: data.name});
+                force.nodes(nodes);
                 restart();
             })
             .on("contextmenu", function(){
@@ -551,6 +552,7 @@ function crnEditor(opts) {
                     resetMouseVars();
                 } else {
                     links.push({source: mousedown_node.id, target: mouseup_node.id, stoichiometry: '?'});
+                    force.links(links);
                     restart();
                 }
 
@@ -587,6 +589,13 @@ function crnEditor(opts) {
                         }
 
                     }
+                }, {
+                    title: 'Delete edge',
+                    action: function (elm, d) {
+                        links.splice(links.indexOf(d), 1);
+                        force.links(links);
+                        restart();
+                    }
                 }]
             }
         ));
@@ -619,6 +628,7 @@ function crnEditor(opts) {
                 var id = d.id;
                 nodes = nodes.filter(function (n){ return n.id != id});
                 links = links.filter(function (l){ return l.source.id != id && l.target.id != id});
+                force.nodes(nodes).links(links);
                 restart();
             }
         }]
