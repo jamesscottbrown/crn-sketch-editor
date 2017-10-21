@@ -297,7 +297,7 @@ function crnEditor(opts) {
         }).length == 0);
 
         
-        return newName && notSpeciesName && notSpeciesSetName && notRateName;
+        return newName && notSpeciesName && notSpeciesSetName && notRateName && notStoichiometryName;
     }
 
 
