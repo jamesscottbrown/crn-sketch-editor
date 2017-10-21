@@ -29,9 +29,9 @@ function crnEditor(opts) {
     var stoichiometriesListDiv = parent.append('div').attr("id", "stoichiometriesDiv");
     drawStoichiometriesList();
 
-    var nodes = opts.node ? opts.nodes : [],
-        lastNodeId = lastNodeId = -1, // first node created will have ID of 0
-        links = opts.links ? opts.links : [];
+    var nodes = opts.node ? opts.nodes : [];
+    var lastNodeId = lastNodeId = -1; // first node created will have ID of 0
+    var links = opts.links ? opts.links : [];
     for (var i=0; i<nodes.length; i++){
         lastNodeId = Math.max(lastNodeId, nodes[i].id);
     }
@@ -371,7 +371,7 @@ function crnEditor(opts) {
                 }
             });
 
-        var addLink = speciesListDiv.append("a")
+        speciesListDiv.append("a")
             .attr("href", "")
             .attr("onclick", "return false;")
             .on("click", function () {
@@ -445,7 +445,7 @@ function crnEditor(opts) {
             .on("dragenter", function () {
                 d3.event.preventDefault();
             })
-            .on('drop', function(d){
+            .on('drop', function(){
                 var data = JSON.parse(d3.event.dataTransfer.getData("custom-data"));
                 nodes.push({id: ++lastNodeId, type: data.type, label: data.name});
                 force.nodes(nodes);
@@ -707,7 +707,7 @@ function crnEditor(opts) {
 
     }
 
-    function getChoiceNodeContextMenu(d){
+    function getChoiceNodeContextMenu(){
         return [{
             title: 'Delete',
             action: function (elm, d) {
@@ -754,7 +754,7 @@ function crnEditor(opts) {
                 type: node.type,
                 x: node.x,
                 y: node.y,
-                label: node.label,
+                label: node.label
             };
             node_list.push(converted_node);
         }
