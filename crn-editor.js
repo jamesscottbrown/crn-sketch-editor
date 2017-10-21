@@ -30,7 +30,7 @@ function crnEditor(opts) {
     drawStoichiometriesList();
 
     var nodes = opts.node ? opts.nodes : [];
-    var lastNodeId = lastNodeId = -1; // first node created will have ID of 0
+    var lastNodeId = -1; // first node created will have ID of 0
     var links = opts.links ? opts.links : [];
     for (var i=0; i<nodes.length; i++){
         lastNodeId = Math.max(lastNodeId, nodes[i].id);
