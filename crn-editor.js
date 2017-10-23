@@ -408,6 +408,9 @@ function crnEditor(opts) {
             .attr('width', width)
             .attr('height', height);
 
+        parent.append("p")
+            .text("Drag and drop species or species variables, or rate parameters to add a reaction. Drag from a reactant to a rate constant, or from a crate constant to a product.");
+
         // define arrow markers for graph links
         svg.append('svg:defs').append('svg:marker')
             .attr('id', 'end-arrow')
