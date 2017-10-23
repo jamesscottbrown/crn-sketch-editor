@@ -87,7 +87,7 @@ function crnEditor(opts) {
             .on("drop", function () {
             });
 
-        speciesSetsListItems.append("i").text("= {");
+        speciesSetsListItems.append("i").text("∈ {");
 
         speciesSetsListItems.append("input")
             .attr("class",  "parameter-input")
