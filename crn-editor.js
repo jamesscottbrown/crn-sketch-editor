@@ -458,6 +458,23 @@ function crnEditor(opts) {
                 d3.event.preventDefault();
             });
 
+        parent.append("button")
+            .on("click", mergeDuplicatedSpecies)
+            .text("Merge species");
+
+        parent.append("button")
+            .on("click", splitDuplicatedSpecies)
+            .text("Split species");
+
+        parent.append("button")
+            .on("click", function(){
+                nodes = [];
+                links = [];
+                force.nodes(nodes).links(links);
+                restart();
+            })
+            .text("Clear");
+
         restart();
     }
 
@@ -745,6 +762,99 @@ function crnEditor(opts) {
         mousedown_link = null;
     }
 
+    function mergeDuplicatedSpecies(){
+        var speciesNames = [];
+        var firstSpeciesWithName = [];
+
+        for (var i=0; i<nodes.length; i++){
+
+            if (nodes[i].type != "species" && nodes[i].type != "speciesVariable"){ continue; }
+
+            var l = nodes[i].label;
+
+            if (speciesNames.indexOf(l) == -1) {
+                // new species
+                speciesNames.push(l);
+                firstSpeciesWithName[l] = nodes[i];
+
+            } else {
+                // species encountered before
+
+                for (var j=0; j<links.length; j++){
+
+                    if (links[j].source == nodes[i]){
+                        links[j].source = firstSpeciesWithName[l];
+                    }
+                    if (links[j].target == nodes[i]){
+                        links[j].target = firstSpeciesWithName[l];
+                    }
+
+
+                }
+                nodes.splice(i, 1);
+                i--;
+            }
+        }
+
+        force.nodes(nodes).links(links);
+        restart();
+    }
+
+    function splitDuplicatedSpecies(){
+
+        for (var i=0; i<nodes.length; i++){
+            // skip node unless it is a reaction
+
+            var reaction = nodes[i];
+            if (reaction.type != "reaction"){ continue; }
+
+            // find all species that participate in reaction
+            var participants = [];
+            var inAnotherReaction = [];
+
+            for (var j=0; j<links.length; j++){
+                var source = links[j].source;
+                var target = links[j].target;
+                if (target == reaction && participants.indexOf(source) == -1){
+                    participants.push(source);
+                }
+                if (source == reaction && participants.indexOf(target) == -1){
+                    participants.push(target);
+                }
+
+                if (target != reaction && inAnotherReaction.indexOf(source) == -1 && (source.type == "species" || source.type == "speciesVariable")){
+                    inAnotherReaction.push(source);
+                }
+                if (source != reaction && inAnotherReaction.indexOf(target) == -1 && (target.type == "species" || target.type == "speciesVariable")){
+                    inAnotherReaction.push(target);
+                }
+            }
+
+
+            // if species participates in another reaction then duplicate it
+            for (j=0; j<participants.length; j++){
+                var s = participants[j];
+
+                if (inAnotherReaction.indexOf(s) != -1){
+                    var newNode = {id: ++lastNodeId, type: s.type, label: s.label};
+                    nodes.push(newNode);
+
+                    for (var k=0; k<links.length; k++){
+                        if (links[k].source == reaction && links[k].target == s){
+                            links[k].target = newNode;
+                        }
+                        if (links[k].target == reaction && links[k].source == s){
+                            links[k].source = newNode;
+                        }
+                    }
+                }
+            }
+        }
+
+        force.nodes(nodes).links(links);
+        restart();
+    }
+
     function getCRN() {
         // note that we cannot serialise {nodes: nodes, links: links} because of cyclic references
         var node_list = [];
@@ -781,7 +891,9 @@ function crnEditor(opts) {
         getCRN: getCRN,
         getCRNjson: function () {
             return JSON.stringify(getCRN());
-        }
+        },
+        mergeReactions: mergeDuplicatedSpecies,
+        splitDuplicatedSpecies: splitDuplicatedSpecies
     }
 
 }  
