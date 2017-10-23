@@ -17,10 +17,6 @@ function crnEditor(opts) {
     var ratesListDiv = parent.append('div').attr("id", "ratesListDiv");
     drawRatesList();
 
-    var constraints = opts.constraints ? opts.constraints : "";
-    var constraintsDiv = parent.append('div').attr("id", "constraintsDiv");
-    drawConstraintsList();
-
     var speciesSets = opts.speciesSets ? opts.speciesSets : [];
     var speciesSetsListDiv = parent.append('div').attr("id", "speciesSetsDiv");
     drawSpeciesSetsList();
@@ -28,6 +24,10 @@ function crnEditor(opts) {
     var stoichiometries = opts.stoichiometries ? stoichiometries : [];
     var stoichiometriesListDiv = parent.append('div').attr("id", "stoichiometriesDiv");
     drawStoichiometriesList();
+
+    var constraints = opts.constraints ? opts.constraints : "";
+    var constraintsDiv = parent.append('div').attr("id", "constraintsDiv");
+    drawConstraintsList();
 
     var nodes = opts.node ? opts.nodes : [];
     var lastNodeId = -1; // first node created will have ID of 0
@@ -48,8 +48,8 @@ function crnEditor(opts) {
     function drawConstraintsList() {
         constraintsDiv.node().innerHTML = "";
 
-        ratesListDiv.append("h2").text("Constraints");
-        ratesListDiv.append("textarea")
+        constraintsDiv.append("h2").text("Constraints");
+        constraintsDiv.append("textarea")
             .node().value = constraints;
 
     }
