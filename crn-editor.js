@@ -640,8 +640,6 @@ function crnEditor(opts) {
 
         if (d.source.type == "reaction" && (d.target.type == "species" || d.target.type == "speciesSet")){
             options.push({
-                // TODO: should be possible to drag to/rom plus node [but only one!]
-
                 title: 'Add alternative product',
                 action: function (elm, d) {
                     addAlternative(d, 'product');
@@ -651,8 +649,6 @@ function crnEditor(opts) {
 
         if (d.target.type == "reaction" && (d.source.type == "species" || d.source.type == "speciesSet")){
             options.push({
-                // TODO: should be possible to drag to/rom plus node [but only one!]
-
                 title: 'Add alternative reactant',
                 action: function (elm, d) {
                     addAlternative(d, 'reactant');
@@ -670,10 +666,12 @@ function crnEditor(opts) {
 
         // change this edge to point at the plus node
         var oldTarget = d.target;
+        var oldStoich = d.stoichiometry;
         d.target = orNode;
+        d.stoichiometry = '';
 
         // add link from plus node to old target of this edge
-        links.push({source: orNode, target: oldTarget, stoichiometry: '?'});
+        links.push({source: orNode, target: oldTarget, stoichiometry: oldStoich});
 
         force.nodes(nodes).links(links);
         restart();
