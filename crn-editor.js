@@ -17,9 +17,9 @@ function crnEditor(opts) {
     var ratesListDiv = parent.append('div').attr("id", "ratesListDiv");
     drawRatesList();
 
-    var speciesSets = opts.speciesSets ? opts.speciesSets : [];
-    var speciesSetsListDiv = parent.append('div').attr("id", "speciesSetsDiv");
-    drawSpeciesSetsList();
+    var speciesVariables = opts.speciesVariables ? opts.speciesVariables : [];
+    var speciesVariablesListDiv = parent.append('div').attr("id", "speciesVariablesDiv");
+    drawSpeciesVariablesList();
 
     var stoichiometries = opts.stoichiometries ? stoichiometries : [];
     var stoichiometriesListDiv = parent.append('div').attr("id", "stoichiometriesDiv");
@@ -54,22 +54,22 @@ function crnEditor(opts) {
 
     }
 
-    function drawSpeciesSetsList() {
+    function drawSpeciesVariablesList() {
 
-        speciesSetsListDiv.node().innerHTML = "";
+        speciesVariablesListDiv.node().innerHTML = "";
 
-        speciesSetsListDiv.append("h2").text("Sets of species");
+        speciesVariablesListDiv.append("h2").text("Species variables");
 
-        speciesSetsListDiv.append("p").text("A set of species can be given as the reactant or product of a reaction, indicating choices. ");
+        speciesVariablesListDiv.append("p").text("A species variable can appear as a reactant or product in a reaction. ");
 
-        var speciesSetsListItems = speciesSetsListDiv.append("ul")
+        var speciesVariablesListItems = speciesVariablesListDiv.append("ul")
             .selectAll("li")
-            .data(speciesSets)
+            .data(speciesVariables)
             .enter()
             .append("li")
             .attr("class", "param-li");
 
-        speciesSetsListItems.append("input")
+        speciesVariablesListItems.append("input")
             .attr("class",  "parameter-input")
             .property("value", function(d){ return d.name})
             .on("change", function(d){
@@ -82,14 +82,14 @@ function crnEditor(opts) {
             .attr("draggable", true)
             .on("dragstart", function (d) {
                 var ev = d3.event;
-                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'speciesSet'}));
+                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'speciesVariable'}));
             })
             .on("drop", function () {
             });
 
-        speciesSetsListItems.append("i").text("∈ {");
+        speciesVariablesListItems.append("i").text("∈ {");
 
-        speciesSetsListItems.append("input")
+        speciesVariablesListItems.append("input")
             .attr("class",  "parameter-input")
             .property("value", function(d){ return d.species.join(", ")})
             .on("change", function(d){
@@ -104,30 +104,30 @@ function crnEditor(opts) {
                 this.value = included_species.join(", ");
             });
 
-        speciesSetsListItems.append("i").text("}");
+        speciesVariablesListItems.append("i").text("}");
 
-        speciesSetsListItems.append("a")
+        speciesVariablesListItems.append("a")
             .attr("class", "fa  fa-trash")
             .attr("href", "")
             .attr("onclick", "return false;")
             .on("click", function (d) {
                 if (confirm("Really delete species set " + d.name + "?")){
-                    speciesSets.splice(speciesSets.indexOf(d), 1);
+                    speciesVariables.splice(speciesVariables.indexOf(d), 1);
                     removeNode(d.name);
-                    drawSpeciesSetsList();
+                    drawSpeciesVariablesList();
                 }
             });
 
-        speciesSetsListDiv.append("a")
+        speciesVariablesListDiv.append("a")
             .attr("href", "")
             .attr("class", "fa fa-plus")
             .attr("onclick", "return false;")
             .on("click", function () {
                 var newName = prompt("Name:");
                 if (isValidNewName(newName)) {
-                    var newspeciesSet = {name: newName, species: []};
-                    speciesSets.push(newspeciesSet);
-                    drawSpeciesSetsList();
+                    var newspeciesVariable = {name: newName, species: []};
+                    speciesVariables.push(newspeciesVariable);
+                    drawSpeciesVariablesList();
                 }
                 return false;
             });
@@ -284,7 +284,7 @@ function crnEditor(opts) {
             return s.name === newName
         }).length == 0);
         
-        var notSpeciesSetName = (speciesSets.filter(function (s) {
+        var notSpeciesVariableName = (speciesVariables.filter(function (s) {
             return s.name === newName
         }).length == 0);
         
@@ -297,7 +297,7 @@ function crnEditor(opts) {
         }).length == 0);
 
         
-        return newName && notSpeciesName && notSpeciesSetName && notRateName && notStoichiometryName;
+        return newName && notSpeciesName && notSpeciesVariableName && notRateName && notStoichiometryName;
     }
 
 
@@ -560,8 +560,8 @@ function crnEditor(opts) {
 
                 var from_reaction = (mousedown_node.type == "reaction");
                 var to_reaction = (mouseup_node.type == "reaction");
-                var from_species = (["species", "speciesSet"].indexOf(mousedown_node.type) != -1);
-                var to_species = (["species", "speciesSet"].indexOf(mouseup_node.type) != -1);
+                var from_species = (["species", "speciesVariable"].indexOf(mousedown_node.type) != -1);
+                var to_species = (["species", "speciesVariable"].indexOf(mouseup_node.type) != -1);
 
 
                 var validNodePair = (from_reaction && to_species)
@@ -583,7 +583,7 @@ function crnEditor(opts) {
             .attr('x', 0)
             .attr('y', 4)
             .attr('class', 'id')
-            .style("font-style", function(d){ return d.type == "speciesSet" ? 'italic' : 'normal' })
+            .style("font-style", function(d){ return d.type == "speciesVariable" ? 'italic' : 'normal' })
             .text(function(d) { return d.label; });
 
         g.filter(function (d) { return d.type == "reaction" })
@@ -638,7 +638,7 @@ function crnEditor(opts) {
             }
         }];
 
-        if (d.source.type == "reaction" && (d.target.type == "species" || d.target.type == "speciesSet")){
+        if (d.source.type == "reaction" && (d.target.type == "species" || d.target.type == "speciesVariable")){
             options.push({
                 title: 'Add alternative product',
                 action: function (elm, d) {
@@ -647,7 +647,7 @@ function crnEditor(opts) {
             });
         }
 
-        if (d.target.type == "reaction" && (d.source.type == "species" || d.source.type == "speciesSet")){
+        if (d.target.type == "reaction" && (d.source.type == "species" || d.source.type == "speciesVariable")){
             options.push({
                 title: 'Add alternative reactant',
                 action: function (elm, d) {
@@ -765,7 +765,7 @@ function crnEditor(opts) {
 
         return {
             species: species,
-            speciesSets: speciesSets,
+            speciesVariables: speciesVariables,
             rates: rates,
             stoichiometries: stoichiometries,
             constraints: constraints,
