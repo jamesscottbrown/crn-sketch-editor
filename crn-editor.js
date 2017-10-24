@@ -686,12 +686,19 @@ function crnEditor(opts) {
 
         // change this edge to point at the plus node
         var oldTarget = d.target;
-        var oldStoich = d.stoichiometry;
         d.target = orNode;
-        d.stoichiometry = '';
+
+        var stoichFromOrNode;
+        if (role == 'product'){
+            stoichFromOrNode = d.stoichiometry;
+            d.stoichiometry = '';
+        } else {
+            stoichFromOrNode = '';
+        }
+
 
         // add link from plus node to old target of this edge
-        links.push({source: orNode, target: oldTarget, stoichiometry: oldStoich});
+        links.push({source: orNode, target: oldTarget, stoichiometry: stoichFromOrNode});
 
         force.nodes(nodes).links(links);
         restart();
