@@ -6,6 +6,7 @@ function crnEditor(opts) {
     } else {
         parent = d3.select('body');
     }
+    var headerLevel = opts.headerLevel ? opts.headerLevel : 1;
 
     var edgeOffset = 20;
 
@@ -76,7 +77,7 @@ function crnEditor(opts) {
     function drawConstraintsList() {
         constraintsDiv.node().innerHTML = "";
 
-        constraintsDiv.append("h2").text("Constraints");
+        constraintsDiv.append("h" + (headerLevel+1)).text("Constraints");
         constraintsDiv.append("textarea")
             .node().value = constraints;
 
@@ -86,7 +87,7 @@ function crnEditor(opts) {
 
         speciesVariablesListDiv.node().innerHTML = "";
 
-        speciesVariablesListDiv.append("h2").text("Species variables");
+        speciesVariablesListDiv.append("h" + (headerLevel+1)).text("Species variables");
 
         speciesVariablesListDiv.append("p").text("A species variable can appear as a reactant or product in a reaction. ");
 
@@ -164,7 +165,7 @@ function crnEditor(opts) {
     function drawRatesList() {
         ratesListDiv.node().innerHTML = "";
 
-        ratesListDiv.append("h2").text("Rate parameters");
+        ratesListDiv.append("h" + (headerLevel+1)).text("Rate parameters");
 
         var ratesListItems = ratesListDiv.append("ul")
             .selectAll("li")
@@ -241,7 +242,7 @@ function crnEditor(opts) {
     function drawStoichiometriesList(){
         stoichiometriesListDiv.node().innerHTML = "";
 
-        stoichiometriesListDiv.append("h2").text("Stoichiometry Variables");
+        stoichiometriesListDiv.append("h" + (headerLevel+1)).text("Stoichiometry Variables");
 
         var stoichiometriesListItems = stoichiometriesListDiv.append("ul")
             .selectAll("li")
@@ -332,7 +333,7 @@ function crnEditor(opts) {
     function drawSpeciesList() {
         speciesListDiv.node().innerHTML = "";
 
-        speciesListDiv.append("h2").text("Species");
+        speciesListDiv.append("h" + (headerLevel+1)).text("Species");
         speciesListDiv.append("p").text("Ranges correspond to intial molecule counts.");
 
         var speciesListItems = speciesListDiv.append("ul")
@@ -417,7 +418,7 @@ function crnEditor(opts) {
 
     function drawReactionGraph(){
         crnDiagramDiv.node().innerHTML = "";
-        crnDiagramDiv.append("h2").text("Reactions");
+        crnDiagramDiv.append("h" + (headerLevel+1)).text("Reactions");
 
         // initiate network
         var width  = opts.width ? opts.width : 960,
