@@ -862,6 +862,12 @@ function crnEditor(opts) {
         restart();
     }
 
+    function disableEditing(){
+        parent.selectAll(".fa-plus").remove(); // Remove all of the '+' buttons
+        parent.selectAll("input").attr("readonly", true);
+        parent.selectAll("input").attr("draggable", false);
+    }
+
     function getCRN() {
         // note that we cannot serialise {nodes: nodes, links: links} because of cyclic references
         var node_list = [];
