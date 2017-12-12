@@ -6,35 +6,18 @@ function crnEditor(opts) {
     } else {
         parent = d3.select('body');
     }
+    var headerLevel = opts.headerLevel ? opts.headerLevel : 1;
 
     var edgeOffset = 20;
 
-    var species = opts.species ? opts.species : [];
+    var species, rates, speciesVariables, stoichiometries, constraints, nodes, links, lastNodeId;
+
     var speciesListDiv = parent.append('div').attr("id", "speciesListDiv");
-    drawSpeciesList();
-
-    var rates = opts.rates ? opts.rates : [];
     var ratesListDiv = parent.append('div').attr("id", "ratesListDiv");
-    drawRatesList();
-
-    var speciesVariables = opts.speciesVariables ? opts.speciesVariables : [];
     var speciesVariablesListDiv = parent.append('div').attr("id", "speciesVariablesDiv");
-    drawSpeciesVariablesList();
-
-    var stoichiometries = opts.stoichiometries ? stoichiometries : [];
     var stoichiometriesListDiv = parent.append('div').attr("id", "stoichiometriesDiv");
-    drawStoichiometriesList();
-
-    var constraints = opts.constraints ? opts.constraints : "";
     var constraintsDiv = parent.append('div').attr("id", "constraintsDiv");
-    drawConstraintsList();
-
-    var nodes = opts.node ? opts.nodes : [];
-    var lastNodeId = -1; // first node created will have ID of 0
-    var links = opts.links ? opts.links : [];
-    for (var i=0; i<nodes.length; i++){
-        lastNodeId = Math.max(lastNodeId, nodes[i].id);
-    }
+    var crnDiagramDiv = parent.append('div').attr("id", "crnDiagramDiv");
 
     var force, svg, drag_line, path, linkLabels, circle;
 
@@ -42,13 +25,59 @@ function crnEditor(opts) {
         mousedown_node = null,
         mouseup_node = null;
 
-    drawReactionGraph();
+    setCRN(opts);
+
+    function setCRN(opts){
+        if (typeof opts === 'string'){
+            opts = JSON.parse(opts);
+
+            // fix links
+            var nodeIndex = [];
+            for (var i=0; i<opts.nodes.length; i++){
+                nodeIndex[ opts.nodes[i].id ] = i;
+            }
+
+            for (i=0; i<opts.links.length; i++){
+                var link = opts.links[i];
+                var sourceNode = opts.nodes[nodeIndex[link.source_id]];
+                var targetNode = opts.nodes[nodeIndex[link.target_id]];
+
+                opts.links[i] = {source: sourceNode, target: targetNode, stoichiometry: link.stoichiometry };
+                console.log(opts.links[i])
+            }
+        }
+
+        species = opts.species ? opts.species : [];
+        rates = opts.rates ? opts.rates : [];
+        speciesVariables = opts.speciesVariables ? opts.speciesVariables : [];
+        stoichiometries = opts.stoichiometries ? opts.stoichiometries : [];
+        constraints = opts.constraints ? opts.constraints : "";
+        nodes = opts.nodes ? opts.nodes : [];
+        links = opts.links ? opts.links : [];
+
+        lastNodeId = -1; // first node created will have ID of 0
+        for (var i=0; i<nodes.length; i++){
+            lastNodeId = Math.max(lastNodeId, nodes[i].id);
+        }
+
+        console.log(nodes);
+
+        drawSpeciesList();
+        drawRatesList();
+        drawSpeciesVariablesList();
+        drawStoichiometriesList();
+        drawConstraintsList();
+
+        drawReactionGraph();
+    }
+
+
 
     // Stuff relating to Constraints list
     function drawConstraintsList() {
         constraintsDiv.node().innerHTML = "";
 
-        constraintsDiv.append("h2").text("Constraints");
+        constraintsDiv.append("h" + (headerLevel+1)).text("Constraints");
         constraintsDiv.append("textarea")
             .node().value = constraints;
 
@@ -58,7 +87,7 @@ function crnEditor(opts) {
 
         speciesVariablesListDiv.node().innerHTML = "";
 
-        speciesVariablesListDiv.append("h2").text("Species variables");
+        speciesVariablesListDiv.append("h" + (headerLevel+1)).text("Species variables");
 
         speciesVariablesListDiv.append("p").text("A species variable can appear as a reactant or product in a reaction. ");
 
@@ -136,7 +165,7 @@ function crnEditor(opts) {
     function drawRatesList() {
         ratesListDiv.node().innerHTML = "";
 
-        ratesListDiv.append("h2").text("Rate parameters");
+        ratesListDiv.append("h" + (headerLevel+1)).text("Rate parameters");
 
         var ratesListItems = ratesListDiv.append("ul")
             .selectAll("li")
@@ -213,7 +242,7 @@ function crnEditor(opts) {
     function drawStoichiometriesList(){
         stoichiometriesListDiv.node().innerHTML = "";
 
-        stoichiometriesListDiv.append("h2").text("Stoichiometry Variables");
+        stoichiometriesListDiv.append("h" + (headerLevel+1)).text("Stoichiometry Variables");
 
         var stoichiometriesListItems = stoichiometriesListDiv.append("ul")
             .selectAll("li")
@@ -304,7 +333,7 @@ function crnEditor(opts) {
     function drawSpeciesList() {
         speciesListDiv.node().innerHTML = "";
 
-        speciesListDiv.append("h2").text("Species");
+        speciesListDiv.append("h" + (headerLevel+1)).text("Species");
         speciesListDiv.append("p").text("Ranges correspond to intial molecule counts.");
 
         var speciesListItems = speciesListDiv.append("ul")
@@ -388,7 +417,8 @@ function crnEditor(opts) {
     }
 
     function drawReactionGraph(){
-        parent.append("h2").text("Reactions");
+        crnDiagramDiv.node().innerHTML = "";
+        crnDiagramDiv.append("h" + (headerLevel+1)).text("Reactions");
 
         // initiate network
         var width  = opts.width ? opts.width : 960,
@@ -403,12 +433,12 @@ function crnEditor(opts) {
             .avoidOverlaps(true)
             .on('tick', tick);
 
-        svg = parent
+        svg = crnDiagramDiv
             .append('svg')
             .attr('width', width)
             .attr('height', height);
 
-        parent.append("p")
+        crnDiagramDiv.append("p")
             .text("Drag and drop species or species variables, or rate parameters to add a reaction. Drag from a reactant to a rate constant, or from a crate constant to a product.");
 
         // define arrow markers for graph links
@@ -458,15 +488,15 @@ function crnEditor(opts) {
                 d3.event.preventDefault();
             });
 
-        parent.append("button")
+        crnDiagramDiv.append("button")
             .on("click", mergeDuplicatedSpecies)
             .text("Merge species");
 
-        parent.append("button")
+        crnDiagramDiv.append("button")
             .on("click", splitDuplicatedSpecies)
             .text("Split species");
 
-        parent.append("button")
+        crnDiagramDiv.append("button")
             .on("click", function(){
                 nodes = [];
                 links = [];
@@ -901,6 +931,7 @@ function crnEditor(opts) {
     }
 
     return {
+        setCRN: setCRN,
         getCRN: getCRN,
         getCRNjson: function () {
             return JSON.stringify(getCRN());
