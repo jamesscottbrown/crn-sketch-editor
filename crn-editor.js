@@ -739,14 +739,16 @@ function crnEditor(opts) {
         return [{
             title: 'Mandatory',
             action: function (elm, d) {
-                d.required=true;
+                var node = nodes.filter(function (n){ return n.id == d.id})[0];
+                node.required=true;
                 restart();
             },
             disabled: d.required
         }, {
             title: 'Optional',
             action: function (elm, d) {
-                d.required=false;
+                var node = nodes.filter(function (n){ return n.id == d.id})[0];
+                node.required=false;
                 restart();
             },
             disabled: !d.required
@@ -919,6 +921,10 @@ function crnEditor(opts) {
                 y: node.y,
                 label: node.label
             };
+
+            if (node.type == "reaction"){
+                converted_node.required = node.required;
+            }
             node_list.push(converted_node);
         }
 
