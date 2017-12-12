@@ -503,6 +503,7 @@ function crnEditor(opts) {
                 force.nodes(nodes).links(links);
                 restart();
             })
+            .attr("id", "clear-button")
             .text("Clear");
 
         restart();
@@ -893,7 +894,13 @@ function crnEditor(opts) {
     }
 
     function disableEditing(){
-        parent.selectAll(".fa-plus").remove(); // Remove all of the '+' buttons
+        parent.selectAll(".fa-plus").remove();
+        parent.selectAll(".fa-trash").remove();
+
+        parent.selectAll("#clear-button").remove();
+
+        parent.selectAll("textarea").attr("readonly", true);
+
         parent.selectAll("input").attr("readonly", true);
         parent.selectAll("input").attr("draggable", false);
     }
@@ -937,7 +944,8 @@ function crnEditor(opts) {
             return JSON.stringify(getCRN());
         },
         mergeReactions: mergeDuplicatedSpecies,
-        splitDuplicatedSpecies: splitDuplicatedSpecies
+        splitDuplicatedSpecies: splitDuplicatedSpecies,
+        disableEditing: disableEditing
     }
 
 }  
