@@ -50,7 +50,7 @@ function crnEditor(opts) {
         species = opts.species ? opts.species : [];
         rates = opts.rates ? opts.rates : [];
         speciesVariables = opts.speciesVariables ? opts.speciesVariables : [];
-        stoichiometries = opts.stoichiometries ? stoichiometries : [];
+        stoichiometries = opts.stoichiometries ? opts.stoichiometries : [];
         constraints = opts.constraints ? opts.constraints : "";
         nodes = opts.nodes ? opts.nodes : [];
         links = opts.links ? opts.links : [];
