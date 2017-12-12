@@ -899,6 +899,8 @@ function crnEditor(opts) {
 
         parent.selectAll("#clear-button").remove();
 
+        parent.selectAll("select").attr("disabled", true); // select elements have no readonly attribute
+
         parent.selectAll("textarea").attr("readonly", true);
 
         parent.selectAll("input").attr("readonly", true);
