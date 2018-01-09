@@ -7,6 +7,7 @@ function crnEditor(opts) {
         parent = d3.select('body');
     }
     var headerLevel = opts.headerLevel ? opts.headerLevel : 1;
+    var updateSpeciesCallback = opts.updateSpeciesCallback ? opts.updateSpeciesCallback : function(){};
 
     var edgeOffset = 20;
 
@@ -160,6 +161,8 @@ function crnEditor(opts) {
                 }
                 return false;
             });
+
+        updateSpeciesCallback(species, speciesVariables);
     }
 
     function drawRatesList() {
@@ -414,6 +417,7 @@ function crnEditor(opts) {
             })
             .append("i").attr("class", "fa fa-plus");
 
+        updateSpeciesCallback(species, speciesVariables);
     }
 
     function drawReactionGraph(){
