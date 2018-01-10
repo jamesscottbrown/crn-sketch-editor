@@ -8,11 +8,13 @@ function crnEditor(opts) {
     }
     var headerLevel = opts.headerLevel ? opts.headerLevel : 1;
     var updateSpeciesCallback = opts.updateSpeciesCallback ? opts.updateSpeciesCallback : function(){};
+    var updateInputCallback = opts.updateInputCallback ? opts.updateInputCallback : function(){};
 
     var edgeOffset = 20;
 
-    var species, rates, speciesVariables, stoichiometries, constraints, nodes, links, lastNodeId;
+    var inputs, species, rates, speciesVariables, stoichiometries, constraints, nodes, links, lastNodeId;
 
+    var inputListDiv = parent.append('div').attr("id", "speciesListDiv");
     var speciesListDiv = parent.append('div').attr("id", "speciesListDiv");
     var ratesListDiv = parent.append('div').attr("id", "ratesListDiv");
     var speciesVariablesListDiv = parent.append('div').attr("id", "speciesVariablesDiv");
@@ -48,6 +50,8 @@ function crnEditor(opts) {
             }
         }
 
+        var allowInputs = opts.allowInputs ? opts.allowInputs : false;
+        inputs = opts.inputs ? opts.inputs : [];
         species = opts.species ? opts.species : [];
         rates = opts.rates ? opts.rates : [];
         speciesVariables = opts.speciesVariables ? opts.speciesVariables : [];
@@ -61,7 +65,9 @@ function crnEditor(opts) {
             lastNodeId = Math.max(lastNodeId, nodes[i].id);
         }
 
-        console.log(nodes);
+        if (allowInputs){
+            drawInputList();
+        }
 
         drawSpeciesList();
         drawRatesList();
@@ -312,6 +318,10 @@ function crnEditor(opts) {
     
     // Stuff relating to species list
     function isValidNewName(newName) {
+        var notInputName = (inputs.filter(function (s) {
+            return s.name === newName
+        }).length == 0);
+
         var notSpeciesName = (species.filter(function (s) {
             return s.name === newName
         }).length == 0);
@@ -329,7 +339,69 @@ function crnEditor(opts) {
         }).length == 0);
 
         
-        return newName && notSpeciesName && notSpeciesVariableName && notRateName && notStoichiometryName;
+        return newName && notInputName && notSpeciesName && notSpeciesVariableName && notRateName && notStoichiometryName;
+    }
+
+
+    function drawInputList() {
+        inputListDiv.node().innerHTML = "";
+
+        inputListDiv.append("h" + (headerLevel+1)).text("Inputs");
+        inputListDiv.append("p").text("Inputs are species whose concentration is given as a function of time.");
+
+        var inputListItems = inputListDiv.append("ul")
+            .selectAll("li")
+            .data(inputs)
+            .enter()
+            .append("li")
+            .attr("class", "param-li");
+
+        inputListItems.append("input")
+            .attr("class",  "parameter-input")
+            .property("value", function(d){ return d.name})
+            .on("change", function(d){
+                if (isValidNewName(this.value)){
+                    renameNode(d.name, this.value);
+                    d.name = this.value;
+                }
+            })
+            // Make draggable
+            .attr("draggable", true)
+            .on("dragstart", function (d) {
+                var ev = d3.event;
+                ev.dataTransfer.setData("custom-data", JSON.stringify({name: d.name, type: 'input'}));
+            })
+            .on("drop", function () {
+            });
+
+
+        inputListItems.append("a")
+            .attr("class", "fa  fa-trash")
+            .attr("href", "")
+            .attr("onclick", "return false;")
+            .on("click", function (d) {
+                if (confirm("Really delete input " + d.name + "?")){
+                    inputs.splice(inputs.indexOf(d), 1);
+                    removeNode(d.name);
+                    drawInputList();
+                }
+            });
+
+        inputListDiv.append("a")
+            .attr("href", "")
+            .attr("onclick", "return false;")
+            .on("click", function () {
+                var newName = prompt("Input name:");
+                if (isValidNewName(newName)) {
+                    var newinput = {name: newName};
+                    inputs.push(newinput);
+                    drawInputList();
+                }
+                return false;
+            })
+            .append("i").attr("class", "fa fa-plus");
+
+        updateInputCallback(inputs);
     }
 
 
