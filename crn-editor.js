@@ -50,7 +50,7 @@ function crnEditor(opts) {
             }
         }
 
-        var allowInputs = opts.allowInputs ? opts.allowInputs : false;
+        var allowInputs = opts.allowInputs ? opts.allowInputs : true;
         inputs = opts.inputs ? opts.inputs : [];
         species = opts.species ? opts.species : [];
         rates = opts.rates ? opts.rates : [];
