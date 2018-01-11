@@ -409,7 +409,7 @@ function crnEditor(opts) {
         speciesListDiv.node().innerHTML = "";
 
         speciesListDiv.append("h" + (headerLevel+1)).text("Species");
-        speciesListDiv.append("p").text("Ranges correspond to intial molecule counts.");
+        speciesListDiv.append("p").text("Ranges correspond to initial molecule counts.");
 
         var speciesListItems = speciesListDiv.append("ul")
             .selectAll("li")
@@ -687,7 +687,7 @@ function crnEditor(opts) {
 
                 var from_reaction = (mousedown_node.type == "reaction");
                 var to_reaction = (mouseup_node.type == "reaction");
-                var from_species = (["species", "speciesVariable"].indexOf(mousedown_node.type) != -1);
+                var from_species = (["species", "speciesVariable", "input"].indexOf(mousedown_node.type) != -1);
                 var to_species = (["species", "speciesVariable"].indexOf(mouseup_node.type) != -1);
 
 
@@ -774,7 +774,7 @@ function crnEditor(opts) {
             });
         }
 
-        if (d.target.type == "reaction" && (d.source.type == "species" || d.source.type == "speciesVariable")){
+        if (d.target.type == "reaction" && (d.source.type == "species" || d.source.type == "speciesVariable" || d.source.type == "input")){
             options.push({
                 title: 'Add alternative reactant',
                 action: function (elm, d) {
@@ -884,7 +884,7 @@ function crnEditor(opts) {
 
         for (var i=0; i<nodes.length; i++){
 
-            if (nodes[i].type != "species" && nodes[i].type != "speciesVariable"){ continue; }
+            if (nodes[i].type != "species" && nodes[i].type != "speciesVariable" && nodes[i].type == "input"){ continue; }
 
             var l = nodes[i].label;
 
@@ -938,10 +938,10 @@ function crnEditor(opts) {
                     participants.push(target);
                 }
 
-                if (target != reaction && inAnotherReaction.indexOf(source) == -1 && (source.type == "species" || source.type == "speciesVariable")){
+                if (target != reaction && inAnotherReaction.indexOf(source) == -1 && (source.type == "species" || source.type == "speciesVariable" || source.type == "input")){
                     inAnotherReaction.push(source);
                 }
-                if (source != reaction && inAnotherReaction.indexOf(target) == -1 && (target.type == "species" || target.type == "speciesVariable")){
+                if (source != reaction && inAnotherReaction.indexOf(target) == -1 && (target.type == "species" || target.type == "speciesVariable" || source.type == "input")){
                     inAnotherReaction.push(target);
                 }
             }
