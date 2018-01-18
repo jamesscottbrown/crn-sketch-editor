@@ -8,6 +8,7 @@ function crnEditor(opts) {
     }
     var headerLevel = opts.headerLevel ? opts.headerLevel : 1;
     var updateSpeciesCallback = opts.updateSpeciesCallback ? opts.updateSpeciesCallback : function(){};
+    var renameSpeciesCallback = opts.renameSpeciesCallback ? opts.renameSpeciesCallback : function(){};
     var updateInputCallback = opts.updateInputCallback ? opts.updateInputCallback : function(){};
 
     var edgeOffset = 20;
@@ -710,7 +711,9 @@ function crnEditor(opts) {
             .attr('x', 0)
             .attr('y', 4)
             .attr('class', 'id')
-            .style("font-style", function(d){ return d.type == "speciesVariable" ? 'italic' : 'normal' })
+            .style("font-style", function(d){ return d.type == "speciesVariable" ? 'italic' : 'normal' });
+
+        svg.selectAll(".id")
             .text(function(d) { return d.label; });
 
         g.filter(function (d) { return d.type == "reaction" })
@@ -856,12 +859,33 @@ function crnEditor(opts) {
     }
 
     function renameNode(oldName, newName){
+
+        // rename actual object
+        var n = inputs.filter(function (s) {  return s.name === oldName });
+        if (n.length > 0) { n[0].name = newName; }
+
+        var n = species.filter(function (s) {  return s.name === oldName });
+        if (n.length > 0) { n[0].name = newName; }
+
+        var n = speciesVariables.filter(function (s) {  return s.name === oldName });
+        if (n.length > 0) { n[0].name = newName; }
+
+        var n = rates.filter(function (s) {  return s.name === oldName });
+        if (n.length > 0) { n[0].name = newName; }
+
+        var n = stoichiometries.filter(function (s) {  return s.name === oldName });
+        if (n.length > 0) { n[0].name = newName; }
+
+        // rename node
         for (var i =0; i<nodes.length; i++){
             if (nodes[i].label == oldName){
-                nodes.label = newName;
+                nodes[i].label = newName;
             }
         }
         restart();
+
+        renameSpeciesCallback(oldName, newName);
+        updateSpeciesCallback(species, speciesVariables);
     }
     
     function removeNode(nodeName){
