@@ -10,6 +10,7 @@ function crnEditor(opts) {
     var updateSpeciesCallback = opts.updateSpeciesCallback ? opts.updateSpeciesCallback : function(){};
     var renameSpeciesCallback = opts.renameSpeciesCallback ? opts.renameSpeciesCallback : function(){};
     var updateInputCallback = opts.updateInputCallback ? opts.updateInputCallback : function(){};
+    var deleteVariableCallback = opts.deleteVariableCallback ? opts.deleteVariableCallback : function(){};
 
     var edgeOffset = 20;
 
@@ -152,6 +153,7 @@ function crnEditor(opts) {
                     speciesVariables.splice(speciesVariables.indexOf(d), 1);
                     removeNode(d.name);
                     drawSpeciesVariablesList();
+                    deleteVariableCallback(d.name);
                 }
             });
 
@@ -385,6 +387,7 @@ function crnEditor(opts) {
                     inputs.splice(inputs.indexOf(d), 1);
                     removeNode(d.name);
                     drawInputList();
+                    deleteVariableCallback(d.name);
                 }
             });
 
@@ -473,6 +476,7 @@ function crnEditor(opts) {
                     species.splice(species.indexOf(d), 1);
                     removeNode(d.name);
                     drawSpeciesList();
+                    deleteVariableCallback(d.name);
                 }
             });
 
