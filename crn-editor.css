@@ -6,7 +6,6 @@ svg {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  -o-user-select: none;
   user-select: none;
 }
 
@@ -38,14 +37,9 @@ path.link.hidden {
 }
 
 circle.node {
-  stroke-width: 1.5px;
+  stroke-width: 2px;
   cursor: pointer;
   fill: white;
-}
-
-circle.node.reflexive {
-  stroke: #000 !important;
-  stroke-width: 2.5px;
 }
 
 text {
@@ -62,7 +56,7 @@ text.id {
 /* form */
 
 .parameter-input {
-  border-width: 0px;
+  border-width: 0;
   width: 50px;
   background-color: #ede9e9;
 }

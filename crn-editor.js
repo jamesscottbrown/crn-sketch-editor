@@ -136,7 +136,7 @@ function crnEditor(opts) {
                 included_species = included_species.map(function(d){ return d.trim(); });
 
                 var species_names = species.map(function (d){ return d.name; });
-                included_species = included_species.filter(function (d){ return species_names.indexOf(d) != -1; });
+                included_species = included_species.filter(function (d){ return species_names.indexOf(d) !== -1; });
 
                 d.species = included_species;
                 this.value = included_species.join(", ");
@@ -323,23 +323,23 @@ function crnEditor(opts) {
     function isValidNewName(newName) {
         var notInputName = (inputs.filter(function (s) {
             return s.name === newName
-        }).length == 0);
+        }).length === 0);
 
         var notSpeciesName = (species.filter(function (s) {
             return s.name === newName
-        }).length == 0);
+        }).length === 0);
         
         var notSpeciesVariableName = (speciesVariables.filter(function (s) {
             return s.name === newName
-        }).length == 0);
+        }).length === 0);
         
         var notRateName = (rates.filter(function (s) {
             return s.name === newName
-        }).length == 0);
+        }).length === 0);
 
         var notStoichiometryName = (stoichiometries.filter(function (s) {
             return s.name === newName
-        }).length == 0);
+        }).length === 0);
 
         
         return newName && notInputName && notSpeciesName && notSpeciesVariableName && notRateName && notStoichiometryName;
@@ -633,7 +633,7 @@ function crnEditor(opts) {
                 targetY = d.target.y - (targetPadding * normY);
 
             var controlX = (sourceX + targetX) / 2,
-                offset = (d.target.type == "reaction") ? +edgeOffset : -edgeOffset,
+                offset = (d.target.type === "reaction") ? +edgeOffset : -edgeOffset,
                 controlY = (sourceY + targetY) / 2 + offset;
 
             return {sourceX: sourceX, sourceY: sourceY, targetX: targetX, targetY: targetY, controlX: controlX, controlY: controlY, offset: offset};
@@ -678,7 +678,7 @@ function crnEditor(opts) {
          g.append('svg:circle')
             .attr('class', 'node')
             .attr('r', 12)
-            .style('stroke', function(d){ return d.type == 'reaction' ? 'black' : 'white' }) // reactions in circle, species not
+            .style('stroke', function(d){ return d.type === 'reaction' ? 'black' : 'white' }) // reactions in circle, species not
             .on('mousedown', function(d) {
                 mousedown_node = d;
                 restart();
@@ -690,16 +690,16 @@ function crnEditor(opts) {
 
                 mouseup_node = d;
 
-                var from_reaction = (mousedown_node.type == "reaction");
-                var to_reaction = (mouseup_node.type == "reaction");
-                var from_species = (["species", "speciesVariable", "input"].indexOf(mousedown_node.type) != -1);
-                var to_species = (["species", "speciesVariable"].indexOf(mouseup_node.type) != -1);
+                var from_reaction = (mousedown_node.type === "reaction");
+                var to_reaction = (mouseup_node.type === "reaction");
+                var from_species = (["species", "speciesVariable", "input"].indexOf(mousedown_node.type) !== -1);
+                var to_species = (["species", "speciesVariable"].indexOf(mouseup_node.type) !== -1);
 
 
                 var validNodePair = (from_reaction && to_species)
-                    || (mousedown_node.type == "or-product" && to_species)
+                    || (mousedown_node.type === "or-product" && to_species)
                     || (from_species && to_reaction)
-                    || (from_species && mouseup_node.type == "or-reactant");
+                    || (from_species && mouseup_node.type === "or-reactant");
 
                 if (mouseup_node === mousedown_node || !validNodePair) {
                     resetMouseVars();
@@ -715,27 +715,27 @@ function crnEditor(opts) {
             .attr('x', 0)
             .attr('y', 4)
             .attr('class', 'id')
-            .style("font-style", function(d){ return d.type == "speciesVariable" ? 'italic' : 'normal' });
+            .style("font-style", function(d){ return d.type === "speciesVariable" ? 'italic' : 'normal' });
 
         svg.selectAll(".id")
             .text(function(d) { return d.label; });
 
-        g.filter(function (d) { return d.type == "reaction" })
+        g.filter(function (d) { return d.type === "reaction" })
             .on("contextmenu", d3.contextMenu(getReactantNodeContextMenu));
 
-        g.filter(function (d) { return d.type == "or-reactant" || d.type == "or-product" })
+        g.filter(function (d) { return d.type === "or-reactant" || d.type === "or-product" })
             .on("contextmenu", d3.contextMenu(getChoiceNodeContextMenu));
 
 
         circle.style("stroke-dasharray", function(d){ return d.required ? '1,0' : '4,4' }); // optional reactions have dashed, rather than solid, border
 
         path.style("stroke-dasharray", function(d){
-            var notRequired = ((d.source.type == "reaction" && !d.source.required) || (d.target.type == "reaction" && !d.target.required));
+            var notRequired = ((d.source.type === "reaction" && !d.source.required) || (d.target.type === "reaction" && !d.target.required));
 
-            var choice = (d.source.type == "or-product" || d.target.type == "or-reactant") ;
+            var choice = (d.source.type === "or-product" || d.target.type === "or-reactant") ;
             return (notRequired || choice) ? '4,4' : '1,0';
         }).style('marker-end', function(d){
-                return (d.target.type == "or-product" || d.target.type == "or-reactant") ? '' : 'url(#end-arrow)';
+                return (d.target.type === "or-product" || d.target.type === "or-reactant") ? '' : 'url(#end-arrow)';
             });
 
         path.on("contextmenu", d3.contextMenu(getEdgeContextMenu));
@@ -757,7 +757,7 @@ function crnEditor(opts) {
                 var stoichNames = stoichiometries.map(function (d) {
                     return d.name;
                 });
-                if (parseInt(stoich) || stoich === '?' || stoichNames.indexOf(stoich) != -1) {
+                if (parseInt(stoich) || stoich === '?' || stoichNames.indexOf(stoich) !== -1) {
                     d.stoichiometry = stoich;
                     restart();
                 }
@@ -772,7 +772,7 @@ function crnEditor(opts) {
             }
         }];
 
-        if (d.source.type == "reaction" && (d.target.type == "species" || d.target.type == "speciesVariable")){
+        if (d.source.type === "reaction" && (d.target.type === "species" || d.target.type === "speciesVariable")){
             options.push({
                 title: 'Add alternative product',
                 action: function (elm, d) {
@@ -781,7 +781,7 @@ function crnEditor(opts) {
             });
         }
 
-        if (d.target.type == "reaction" && (d.source.type == "species" || d.source.type == "speciesVariable" || d.source.type == "input")){
+        if (d.target.type === "reaction" && (d.source.type === "species" || d.source.type === "speciesVariable" || d.source.type === "input")){
             options.push({
                 title: 'Add alternative reactant',
                 action: function (elm, d) {
@@ -803,7 +803,7 @@ function crnEditor(opts) {
         d.target = orNode;
 
         var stoichFromOrNode;
-        if (role == 'product'){
+        if (role === 'product'){
             stoichFromOrNode = d.stoichiometry;
             d.stoichiometry = '';
         } else {
@@ -822,7 +822,7 @@ function crnEditor(opts) {
         return [{
             title: 'Mandatory',
             action: function (elm, d) {
-                var node = nodes.filter(function (n){ return n.id == d.id})[0];
+                var node = nodes.filter(function (n){ return n.id === d.id})[0];
                 node.required=true;
                 restart();
             },
@@ -830,7 +830,7 @@ function crnEditor(opts) {
         }, {
             title: 'Optional',
             action: function (elm, d) {
-                var node = nodes.filter(function (n){ return n.id == d.id})[0];
+                var node = nodes.filter(function (n){ return n.id === d.id})[0];
                 node.required=false;
                 restart();
             },
@@ -839,8 +839,8 @@ function crnEditor(opts) {
             title: 'Delete',
             action: function (elm, d) {
                 var id = d.id;
-                nodes = nodes.filter(function (n){ return n.id != id});
-                links = links.filter(function (l){ return l.source.id != id && l.target.id != id});
+                nodes = nodes.filter(function (n){ return n.id !== id});
+                links = links.filter(function (l){ return l.source.id !== id && l.target.id !== id});
                 force.nodes(nodes).links(links);
                 restart();
             }
@@ -853,8 +853,8 @@ function crnEditor(opts) {
             title: 'Delete',
             action: function (elm, d) {
                 var id = d.id;
-                nodes = nodes.filter(function (n){ return n.id != id});
-                links = links.filter(function (l){ return l.source.id != id && l.target.id != id});
+                nodes = nodes.filter(function (n){ return n.id !== id});
+                links = links.filter(function (l){ return l.source.id !== id && l.target.id !== id});
                 force.nodes(nodes).links(links);
                 restart();
             }
@@ -868,21 +868,21 @@ function crnEditor(opts) {
         var n = inputs.filter(function (s) {  return s.name === oldName });
         if (n.length > 0) { n[0].name = newName; }
 
-        var n = species.filter(function (s) {  return s.name === oldName });
+        n = species.filter(function (s) {  return s.name === oldName });
         if (n.length > 0) { n[0].name = newName; }
 
-        var n = speciesVariables.filter(function (s) {  return s.name === oldName });
+        n = speciesVariables.filter(function (s) {  return s.name === oldName });
         if (n.length > 0) { n[0].name = newName; }
 
-        var n = rates.filter(function (s) {  return s.name === oldName });
+        n = rates.filter(function (s) {  return s.name === oldName });
         if (n.length > 0) { n[0].name = newName; }
 
-        var n = stoichiometries.filter(function (s) {  return s.name === oldName });
+        n = stoichiometries.filter(function (s) {  return s.name === oldName });
         if (n.length > 0) { n[0].name = newName; }
 
         // rename node
         for (var i =0; i<nodes.length; i++){
-            if (nodes[i].label == oldName){
+            if (nodes[i].label === oldName){
                 nodes[i].label = newName;
             }
         }
@@ -893,8 +893,8 @@ function crnEditor(opts) {
     }
     
     function removeNode(nodeName){
-        links = links.filter(function (l){ return (l.source.label != nodeName) && (l.target.label != nodeName); });
-        nodes = nodes.filter(function(n){ return n.label != nodeName });
+        links = links.filter(function (l){ return (l.source.label !== nodeName) && (l.target.label !== nodeName); });
+        nodes = nodes.filter(function(n){ return n.label !== nodeName });
         force.links(links).nodes(nodes);
         restart();
     }
@@ -912,11 +912,11 @@ function crnEditor(opts) {
 
         for (var i=0; i<nodes.length; i++){
 
-            if (nodes[i].type != "species" && nodes[i].type != "speciesVariable" && nodes[i].type == "input"){ continue; }
+            if (nodes[i].type !== "species" && nodes[i].type !== "speciesVariable" && nodes[i].type === "input"){ continue; }
 
             var l = nodes[i].label;
 
-            if (speciesNames.indexOf(l) == -1) {
+            if (speciesNames.indexOf(l) === -1) {
                 // new species
                 speciesNames.push(l);
                 firstSpeciesWithName[l] = nodes[i];
@@ -926,10 +926,10 @@ function crnEditor(opts) {
 
                 for (var j=0; j<links.length; j++){
 
-                    if (links[j].source == nodes[i]){
+                    if (links[j].source === nodes[i]){
                         links[j].source = firstSpeciesWithName[l];
                     }
-                    if (links[j].target == nodes[i]){
+                    if (links[j].target === nodes[i]){
                         links[j].target = firstSpeciesWithName[l];
                     }
 
@@ -950,7 +950,7 @@ function crnEditor(opts) {
             // skip node unless it is a reaction
 
             var reaction = nodes[i];
-            if (reaction.type != "reaction"){ continue; }
+            if (reaction.type !== "reaction"){ continue; }
 
             // find all species that participate in reaction
             var participants = [];
@@ -959,17 +959,17 @@ function crnEditor(opts) {
             for (var j=0; j<links.length; j++){
                 var source = links[j].source;
                 var target = links[j].target;
-                if (target == reaction && participants.indexOf(source) == -1){
+                if (target === reaction && participants.indexOf(source) === -1){
                     participants.push(source);
                 }
-                if (source == reaction && participants.indexOf(target) == -1){
+                if (source === reaction && participants.indexOf(target) === -1){
                     participants.push(target);
                 }
 
-                if (target != reaction && inAnotherReaction.indexOf(source) == -1 && (source.type == "species" || source.type == "speciesVariable" || source.type == "input")){
+                if (target !== reaction && inAnotherReaction.indexOf(source) === -1 && (source.type === "species" || source.type === "speciesVariable" || source.type === "input")){
                     inAnotherReaction.push(source);
                 }
-                if (source != reaction && inAnotherReaction.indexOf(target) == -1 && (target.type == "species" || target.type == "speciesVariable" || source.type == "input")){
+                if (source !== reaction && inAnotherReaction.indexOf(target) === -1 && (target.type === "species" || target.type === "speciesVariable" || source.type === "input")){
                     inAnotherReaction.push(target);
                 }
             }
@@ -979,15 +979,15 @@ function crnEditor(opts) {
             for (j=0; j<participants.length; j++){
                 var s = participants[j];
 
-                if (inAnotherReaction.indexOf(s) != -1){
+                if (inAnotherReaction.indexOf(s) !== -1){
                     var newNode = {id: ++lastNodeId, type: s.type, label: s.label};
                     nodes.push(newNode);
 
                     for (var k=0; k<links.length; k++){
-                        if (links[k].source == reaction && links[k].target == s){
+                        if (links[k].source === reaction && links[k].target === s){
                             links[k].target = newNode;
                         }
-                        if (links[k].target == reaction && links[k].source == s){
+                        if (links[k].target === reaction && links[k].source === s){
                             links[k].source = newNode;
                         }
                     }
@@ -1016,7 +1016,7 @@ function crnEditor(opts) {
     function getCRN() {
         // note that we cannot serialise {nodes: nodes, links: links} because of cyclic references
         var node_list = [];
-        for (i = 0; i < nodes.length; i++) {
+        for (var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
             var converted_node = {
                 id: node.id,
@@ -1026,14 +1026,14 @@ function crnEditor(opts) {
                 label: node.label
             };
 
-            if (node.type == "reaction"){
+            if (node.type === "reaction"){
                 converted_node.required = node.required;
             }
             node_list.push(converted_node);
         }
 
         var link_list = [];
-        for (i = 0; i < links.length; i++) {
+        for (var i = 0; i < links.length; i++) {
             var link = links[i];
             link_list.push({source_id: link.source.id, target_id: link.target.id, stoichiometry: link.stoichiometry});
         }
