@@ -1041,6 +1041,7 @@ function crnEditor(opts) {
         return {
             species: species,
             speciesVariables: speciesVariables,
+            inputs: inputs,
             rates: rates,
             stoichiometries: stoichiometries,
             constraints: constraints,
