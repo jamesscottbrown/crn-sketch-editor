@@ -177,7 +177,7 @@ function crnEditor(opts) {
     function drawRatesList() {
         ratesListDiv.node().innerHTML = "";
 
-        ratesListDiv.append("h" + (headerLevel+1)).text("Rate parameters");
+        ratesListDiv.append("h" + (headerLevel+1)).text("Reaction kinetics");
 
         var ratesListItems = ratesListDiv.append("ul")
             .selectAll("li")
@@ -222,6 +222,74 @@ function crnEditor(opts) {
                 d.max = this.value;
             });
 
+
+
+        // Hill kinetics
+        var hillItems = ratesListItems.filter(function(d){ return d.kineticsType === "Hill" });
+
+        hillItems.append("i").text(" (");
+        hillItems.append("input")
+            .attr("class",  "parameter-input")
+            .property("value", function(d){ return d.Ka_min})
+            .on("change", function(d){
+                d.Ka_min = this.value;
+            });
+
+        hillItems.append("i").text(" ≤ Ka ≤");
+
+        hillItems.append("i").text(" (");
+        hillItems.append("input")
+            .attr("class",  "parameter-input")
+            .property("value", function(d){ return d.Ka_max})
+            .on("change", function(d){
+                d.Ka_max = this.value;
+            });
+
+        hillItems.append("i").text(" , ");
+
+        hillItems.append("input")
+            .attr("class",  "parameter-input")
+            .property("value", function(d){ return d.n_min})
+            .on("change", function(d){
+                d.n_min = this.value;
+            });
+
+        hillItems.append("i").text(" ≤ n ≤");
+
+        hillItems.append("input")
+            .attr("class",  "parameter-input")
+            .property("value", function(d){ return d.n_max})
+            .on("change", function(d) {
+                d.n_max = this.value;
+            });
+
+        hillItems.append("i").text(" )");
+
+
+        // Michaelis-Menten
+        var mmItems = ratesListItems.filter(function(d){ return d.kineticsType === "Michaelis-Menten" });
+
+        mmItems.append("i").text(" (");
+        mmItems.append("input")
+            .attr("class",  "parameter-input")
+            .property("value", function(d){ return d.Km_min})
+            .on("change", function(d){
+                d.Km_min = this.value;
+            });
+
+        mmItems.append("i").text(" ≤ Km ≤");
+
+        mmItems.append("i").text(" (");
+        mmItems.append("input")
+            .attr("class",  "parameter-input")
+            .property("value", function(d){ return d.Km_max})
+            .on("change", function(d){
+                d.Km_max = this.value;
+            });
+
+        mmItems.append("i").text(" )");
+
+
         ratesListItems.append("a")
             .attr("class", "fa  fa-trash")
             .attr("href", "")
@@ -242,12 +310,29 @@ function crnEditor(opts) {
             .on("click", function () {
                 var newName = prompt("Rate parameter name:");
                 if (isValidNewName(newName)) {
-                    var newRate = {name: newName, min: 1, max: 1};
+
+                    var kineticsType = kineticsSelect.node().value;
+                    var newRate;
+
+                    if (kineticsType === "Mass Action"){
+                        newRate = {name: newName, kineticsType: kineticsType, min: 1, max: 1};
+                    } else if (kineticsType === "Michaelis-Menten"){
+                        newRate = {name: newName, kineticsType: kineticsType, min: 1, max: 1, Km_min: 1, Km_max: 1};
+                    } else if (kineticsType === "Hill"){
+                        newRate = {name: newName, kineticsType: kineticsType, min: 1, max: 1, Ka_min: 1, Ka_max: 1, n_min: 1, n_max: 1};
+                    }
+
                     rates.push(newRate);
                     drawRatesList();
+
                 }
                 return false;
             });
+
+        var kineticsSelect = ratesListDiv.append("select");
+        kineticsSelect.append("option").text("Mass Action").attr("selected", "true");
+        kineticsSelect.append("option").text("Michaelis-Menten");
+        kineticsSelect.append("option").text("Hill");
 
     }
 
@@ -686,11 +771,17 @@ function crnEditor(opts) {
                 var from_species = (["species", "speciesVariable", "input"].indexOf(mousedown_node.type) !== -1);
                 var to_species = (["species", "speciesVariable"].indexOf(mouseup_node.type) !== -1);
 
-
                 var validNodePair = (from_reaction && to_species)
                     || (mousedown_node.type === "or-product" && to_species)
                     || (from_species && to_reaction)
                     || (from_species && mouseup_node.type === "or-reactant");
+
+                // Only allow a single input to a non mass-action reaction
+                var kinetics = rates.filter( function(d){ return d.name === mouseup_node.label })[0];
+                var other_links_to_target = links.filter( function(d){ return d.target === mouseup_node } );
+                if (kinetics.kineticsType !== "Mass Action" && other_links_to_target.length > 0){
+                    validNodePair = false;
+                }
 
                 if (mouseup_node === mousedown_node || !validNodePair) {
                     resetMouseVars();
