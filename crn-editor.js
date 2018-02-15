@@ -458,15 +458,6 @@ function crnEditor(opts) {
                 d.initial_max = this.value;
             });
 
-        var mandatoryField = speciesListItems.append("select")
-            .style("margin-left", "10px")
-            .on("change", function(d){
-                d.required = this.value;
-            });
-        mandatoryField.append("option").attr("value", true).text("Mandatory");
-        mandatoryField.append("option").attr("value", false).text("Optional");
-        mandatoryField.property('value', function(d){return d.required});
-
         speciesListItems.append("a")
             .attr("class", "fa  fa-trash")
             .attr("href", "")
@@ -486,7 +477,7 @@ function crnEditor(opts) {
             .on("click", function () {
                 var newName = prompt("Species name:");
                 if (isValidNewName(newName)) {
-                    var newSpecies = {name: newName, required: true, initial_min: 1, initial_max: 1};
+                    var newSpecies = {name: newName, initial_min: 1, initial_max: 1};
                     species.push(newSpecies);
                     drawSpeciesList();
                 }
