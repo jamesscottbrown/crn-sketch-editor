@@ -88,6 +88,7 @@ function crnEditor(opts) {
 
         constraintsDiv.append("h" + (headerLevel+1)).text("Constraints");
         constraintsDiv.append("textarea")
+            .on("change", function(){ constraints = this.value.replace('\n', ''); })
             .node().value = constraints;
 
     }
@@ -225,7 +226,7 @@ function crnEditor(opts) {
 
 
         // Hill kinetics
-        var hillItems = ratesListItems.filter(function(d){ return d.kineticsType === "Hill" });
+        var hillItems = ratesListItems.filter(function(d){ return d.kineticsType === "Hill (Activation)" || d.kineticsType === "Hill (Repression)" });
 
         hillItems.append("i").text(" (");
         hillItems.append("input")
@@ -318,7 +319,7 @@ function crnEditor(opts) {
                         newRate = {name: newName, kineticsType: kineticsType, min: 1, max: 1};
                     } else if (kineticsType === "Michaelis-Menten"){
                         newRate = {name: newName, kineticsType: kineticsType, min: 1, max: 1, Km_min: 1, Km_max: 1};
-                    } else if (kineticsType === "Hill"){
+                    } else if (kineticsType === "Hill (Activation)" || kineticsType === "Hill (Repression)"){
                         newRate = {name: newName, kineticsType: kineticsType, min: 1, max: 1, Ka_min: 1, Ka_max: 1, n_min: 1, n_max: 1};
                     }
 
@@ -332,7 +333,8 @@ function crnEditor(opts) {
         var kineticsSelect = ratesListDiv.append("select");
         kineticsSelect.append("option").text("Mass Action").attr("selected", "true");
         kineticsSelect.append("option").text("Michaelis-Menten");
-        kineticsSelect.append("option").text("Hill");
+        kineticsSelect.append("option").text("Hill (Activation)");
+        kineticsSelect.append("option").text("Hill (Repression)");
 
     }
 
@@ -779,7 +781,7 @@ function crnEditor(opts) {
                 // Only allow a single input to a non mass-action reaction
                 var kinetics = rates.filter( function(d){ return d.name === mouseup_node.label })[0];
                 var other_links_to_target = links.filter( function(d){ return d.target === mouseup_node } );
-                if (kinetics.kineticsType !== "Mass Action" && other_links_to_target.length > 0){
+                if (to_reaction && kinetics.kineticsType !== "Mass Action" && other_links_to_target.length > 0){
                     validNodePair = false;
                 }
 
