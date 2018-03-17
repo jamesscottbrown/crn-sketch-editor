@@ -6,11 +6,15 @@ function crnEditor(opts) {
     } else {
         parent = d3.select('body');
     }
+
     var headerLevel = opts.headerLevel ? opts.headerLevel : 1;
     var updateSpeciesCallback = opts.updateSpeciesCallback ? opts.updateSpeciesCallback : function(){};
     var renameSpeciesCallback = opts.renameSpeciesCallback ? opts.renameSpeciesCallback : function(){};
     var updateInputCallback = opts.updateInputCallback ? opts.updateInputCallback : function(){};
     var deleteVariableCallback = opts.deleteVariableCallback ? opts.deleteVariableCallback : function(){};
+
+    var width  = opts.width ? opts.width : 960;
+    var height = opts.height ? opts.height : 500;
 
     var edgeOffset = 20;
 
@@ -30,11 +34,26 @@ function crnEditor(opts) {
         mousedown_node = null,
         mouseup_node = null;
 
+    var shiftDown = false;
+    d3.select("body")
+        .on("keydown", function () {
+            if (d3.event.key === "Shift") {
+                shiftDown = true;
+            }
+        })
+        .on("keyup", function () {
+            if (d3.event.key === "Shift") {
+                shiftDown = false;
+            }
+        });
+
     setCRN(opts);
 
     function setCRN(opts){
         if (typeof opts === 'string'){
             opts = JSON.parse(opts);
+            opts.nodes = opts.nodes ? opts.nodes : [];
+            opts.links = opts.links ? opts.links : [];
 
             // fix links
             var nodeIndex = [];
@@ -580,9 +599,6 @@ function crnEditor(opts) {
         crnDiagramDiv.append("h" + (headerLevel+1)).text("Reactions");
 
         // initiate network
-        var width  = opts.width ? opts.width : 960,
-            height = opts.height ? opts.height : 500;
-
         force = cola.d3adaptor()
             .nodes(nodes)
             .links(links)
@@ -643,7 +659,7 @@ function crnEditor(opts) {
                 var data = JSON.parse(d3.event.dataTransfer.getData("custom-data"));
                 nodes.push({id: ++lastNodeId, type: data.type, label: data.name});
                 force.nodes(nodes);
-                restart();
+                restart(true);
             })
             .on("contextmenu", function(){
                 d3.event.preventDefault();
@@ -662,12 +678,12 @@ function crnEditor(opts) {
                 nodes = [];
                 links = [];
                 force.nodes(nodes).links(links);
-                restart();
+                restart(true);
             })
             .attr("id", "clear-button")
             .text("Clear");
 
-        restart();
+        restart(true);
     }
 
 
@@ -721,21 +737,14 @@ function crnEditor(opts) {
 
     }
 
-    function restart() {
+    function restart(redoLayout) {
         // path (link) group
         path = path.data(links);
         path.style('marker-end', 'url(#end-arrow)');
 
         // add new links
         path.enter().append('svg:path')
-            .attr('class', 'link')
-            .on('mousedown', function(d) {
-                if(d3.event.ctrlKey) return;
-
-                // select link
-                mousedown_link = d;
-                restart();
-            });
+            .attr('class', 'link');
 
         // remove old links
         path.exit().remove();
@@ -761,7 +770,6 @@ function crnEditor(opts) {
             .style('stroke', function(d){ return d.type === 'reaction' ? 'black' : 'white' }) // reactions in circle, species not
             .on('mousedown', function(d) {
                 mousedown_node = d;
-                restart();
             })
             .on('mouseup', function(d) {
                 if(!mousedown_node) return;
@@ -792,10 +800,34 @@ function crnEditor(opts) {
                 } else {
                     links.push({source: mousedown_node, target: mouseup_node, stoichiometry: '?'});
                     force.links(links);
-                    restart();
+                    restart(true);
                 }
 
-            });
+            })
+             .call(
+                 d3.behavior.drag()
+                     .origin(Object)
+                     .on("drag",
+
+                         function (d) {
+                             if (!shiftDown) {
+                                 return;
+                             }
+                             console.log("DRAGGED")
+
+                             var newPos = d3.mouse(svg.node());
+
+                             console.log(newPos)
+
+                             d.x = Math.max(0, Math.min(width, newPos[0]));
+                             d.y = Math.max(0, Math.min(height, newPos[1]));
+
+                             console.log([d.x, d.y])
+                             tick();
+                         })
+             );
+
+
 
         g.append('svg:text')
             .attr('x', 0)
@@ -830,7 +862,9 @@ function crnEditor(opts) {
         circle.exit().remove();
 
         // set the graph in motion
-        force.start();
+        if (redoLayout){
+            force.start();
+        }
     }
 
     function getEdgeContextMenu(d) {
@@ -854,7 +888,7 @@ function crnEditor(opts) {
             action: function (elm, d) {
                 links.splice(links.indexOf(d), 1);
                 force.links(links);
-                restart();
+                restart(true);
             }
         }];
 
@@ -901,7 +935,7 @@ function crnEditor(opts) {
         links.push({source: orNode, target: oldTarget, stoichiometry: stoichFromOrNode});
 
         force.nodes(nodes).links(links);
-        restart();
+        restart(true);
     }
 
     function getReactantNodeContextMenu(d){
@@ -982,7 +1016,7 @@ function crnEditor(opts) {
         links = links.filter(function (l){ return (l.source.label !== nodeName) && (l.target.label !== nodeName); });
         nodes = nodes.filter(function(n){ return n.label !== nodeName });
         force.links(links).nodes(nodes);
-        restart();
+        restart(true);
     }
     
 
@@ -1027,7 +1061,7 @@ function crnEditor(opts) {
         }
 
         force.nodes(nodes).links(links);
-        restart();
+        restart(true);
     }
 
     function splitDuplicatedSpecies(){
@@ -1082,7 +1116,7 @@ function crnEditor(opts) {
         }
 
         force.nodes(nodes).links(links);
-        restart();
+        restart(true);
     }
 
     function disableEditing(){
