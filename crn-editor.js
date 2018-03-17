@@ -683,7 +683,8 @@ function crnEditor(opts) {
             .attr("id", "clear-button")
             .text("Clear");
 
-        restart(true);
+        restart();
+        tick();
     }
 
 
@@ -813,16 +814,10 @@ function crnEditor(opts) {
                              if (!shiftDown) {
                                  return;
                              }
-                             console.log("DRAGGED")
 
                              var newPos = d3.mouse(svg.node());
-
-                             console.log(newPos)
-
                              d.x = Math.max(0, Math.min(width, newPos[0]));
                              d.y = Math.max(0, Math.min(height, newPos[1]));
-
-                             console.log([d.x, d.y])
                              tick();
                          })
              );
